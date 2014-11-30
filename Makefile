@@ -20,7 +20,7 @@ obj/%.d: src/%.cpp
 	 $(CC) -MM $^ | sed 's/^/obj\//' > $@
 	
 obj/%.o: obj/%.d
-	$(CC) -c $(addprefix src/, $(notdir $(TEST_SRCS:.o=.cpp))) -o $@ -g
+	$(CC) -c $(addprefix src/, $(notdir $(patsubst %.o,%.cpp,$@))) -o $@ -g
 
 bin/%: obj/%.o
 	$(CC) -o $@ $< -g
