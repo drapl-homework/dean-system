@@ -16,6 +16,7 @@ class menu{
 	public:
 		void addItem(string label, string text, MenuItem item);
 		int bind(string label, void(*function)());
+		int retext(string label, string text);
 		void execute();
 	private:
 		map<string,pair<string,MenuItem> > items;
@@ -46,6 +47,25 @@ int menu::bind(string label, void(*function)())
 		}
 		if(it->second.second.type == SUBMENU) //查找子菜单
 			if(it->second.second.submenu->bind(label,function))
+				return true;
+	}
+	return false;
+}
+
+int menu::retext(string label, string text)
+{
+	int result = 0;
+	for(map<string,pair<string,MenuItem> >::iterator it = items.begin();
+			it !=items.end(); it++)
+	{
+		if(it->first == label)
+		// 查找本菜单
+		{
+			it->second.first = text;
+			return true;
+		}
+		if(it->second.second.type == SUBMENU) //查找子菜单
+			if(it->second.second.submenu->retext(label,text))
 				return true;
 	}
 	return false;
@@ -124,6 +144,11 @@ class MenuCreator{
 		int bind(string label, void(*function)())
 		{
 			return topMenu->bind(label, function);
+		}
+
+		int retext(string label, string text)
+		{
+			return topMenu->retext(label, text);
 		}
 
 		menu* parse(vector<string>::iterator begin, vector<string>::iterator end, vector<string>::iterator& it)
