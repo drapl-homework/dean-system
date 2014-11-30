@@ -6,6 +6,7 @@ TEST_DEPS := $(TEST_OBJS:.o=.d)
 SRCS := $(filter-out src/%_test.cpp, $(wildcard src/*.cpp))
 OBJS := $(addprefix obj/, $(notdir $(SRCS:.cpp=.o)))
 BINS := $(addprefix bin/, $(notdir $(basename $(SRCS))))
+DEPS := $(OBJS:.o=.d)
 
 CC := g++
 
@@ -15,6 +16,7 @@ all: $(BINS)
 test: $(TEST_BINS)
 
 -include $(TEST_DEPS)
+-include $(DEPS)
 
 obj/%.d: src/%.cpp
 	 $(CC) -MM $^ | sed 's/^/obj\//' > $@

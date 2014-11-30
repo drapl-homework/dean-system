@@ -14,10 +14,11 @@ struct MenuItem;
 class BindError{};
 class menu{
 	public:
+		menu();
 		void addItem(string label, string text, MenuItem item);
 		int bind(string label, void(*function)());
 		int retext(string label, string text);
-		void header();
+		void(*header_function)();
 		void execute();
 	private:
 		map<string,pair<string,MenuItem> > items;
@@ -29,6 +30,10 @@ struct MenuItem{
 	void(*function)();
 };
 
+menu::menu()
+{
+	header_function = NULL;
+}
 void menu::addItem(string label, string text, MenuItem item)
 {
 	items.insert(pair<string, pair<string, MenuItem> >(label, pair<string, MenuItem>(text, item)));
@@ -44,6 +49,11 @@ int menu::bind(string label, void(*function)())
 		// 查找本菜单
 		{
 			it->second.second.function = function;
+			return true;
+		}
+		if(it->first == label and it->second.second.type == SUBMENU)
+		{
+			it->second.second.submenu->header_function = function;
 			return true;
 		}
 		if(it->second.second.type == SUBMENU) //查找子菜单
@@ -85,6 +95,8 @@ void menu::execute() //显示菜单
 
 		//打印标题栏
 		printf("\n\n\n====================\n");
+		if(header_function)
+			header_function();
 		
 
 		for(vector<map<string,pair<string,MenuItem> >::iterator >::iterator it = idmap.begin(); it != idmap.end(); it++)
