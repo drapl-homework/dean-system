@@ -17,6 +17,7 @@ class menu{
 		void addItem(string label, string text, MenuItem item);
 		int bind(string label, void(*function)());
 		int retext(string label, string text);
+		void header();
 		void execute();
 	private:
 		map<string,pair<string,MenuItem> > items;
@@ -71,15 +72,21 @@ int menu::retext(string label, string text)
 	return false;
 }
 
-void menu::execute()
+void menu::execute() //显示菜单
 {
 	while(true)
 	{
+		/*给菜单项目编号*/
 		vector<map<string,pair<string,MenuItem> >::iterator > idmap;
-
+		
 		for(map<string,pair<string,MenuItem> >::iterator it = items.begin();
 				it !=items.end(); it++)
 			idmap.push_back(it);
+
+		//打印标题栏
+		printf("\n\n\n====================\n");
+		
+
 		for(vector<map<string,pair<string,MenuItem> >::iterator >::iterator it = idmap.begin(); it != idmap.end(); it++)
 			printf("[%d]%s\n", int(it-idmap.begin()+1), (*it)->second.first.c_str());
 
@@ -88,14 +95,23 @@ void menu::execute()
 		scanf("%d", &selected);
 
 
-		if(selected <= 0 )
+		if(!(selected > 0 and selected <= idmap.size()))
 			break;
 
+		//进入子菜单
 		if(idmap[selected - 1]->second.second.type == SUBMENU)
 			idmap[selected - 1]->second.second.submenu->execute();
 
+		//执行函数
 		if(idmap[selected - 1]->second.second.type == FUNCTION)
+		{
+			if(!idmap[selected - 1]->second.second.function)
+			{
+				printf("功能未实现！\n");
+				continue;
+			}
 			idmap[selected - 1]->second.second.function();
+		}
 	}
 }
 
@@ -163,6 +179,7 @@ class MenuCreator{
 					break;
 				}
 				MenuItem item;
+				item.function = NULL;
 
 				/* 解析标记和文字 */
 				string label, text;

@@ -25,7 +25,7 @@ struct student_course //学生选课、成绩数据项
 	int score; //分数
 };
 
-struct student_course //教师上课数据项
+struct teacher_course //教师上课数据项
 {
 	int teacher_id; //教师编号
 	int course_id; //课程编号
