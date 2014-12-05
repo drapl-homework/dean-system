@@ -16,6 +16,8 @@ db<course> db_course(string("config/course.db"));
 db<student_course> db_student_course(string("config/student_course.db"));
 db<teacher_course> db_teacher_course(string("config/teacher_course.db"));
 
+char* course_id2name(int);
+
 template < typename T >
 T getinput(string s)
 {
@@ -378,10 +380,36 @@ void del_teacher()
 	if(it == db_teacher.getData().end())
 		return;
 
+	vector<teacher_course>::iterator it2 = find_if(db_teacher_course.getData().begin(),
+		db_teacher_course.getData().end(),
+		teacher_course_teacher_id_equal(it->id)); //老师是否有课
+	if(it2 != db_teacher_course.getData().end())
+		cout << "该老师有课，以下为该老师的课程信息。若删除该老师，对应课程会受到影响。" << endl;
+		
+	for(vector<teacher_course>::iterator it3 = db_teacher_course.getData().begin();
+			it3 != db_teacher_course.getData().end(); it3++) //检查是否有一个人上的课
+		if(it3->teacher_id == it->id) //找到该老师的课程
+		{
+			if(count_if(db_teacher_course.getData().begin(),
+			 db_teacher_course.getData().end(),
+			 teacher_course_course_id_equal(it3->course_id)) == 1) //这门课只有一个人上
+			{
+				cout << course_id2name(it3->course_id) << "课程只有一个人上，请先删除该课程。" << endl;
+				return;
+			}
+		}
+
 	if(yesorno("是否确定删除"))
 	{
 		db_teacher.getData().erase(it);
 		db_teacher.putData();
+		
+		for(vector<teacher_course>::iterator it3 = db_teacher_course.getData().begin();
+			it3 != db_teacher_course.getData().end(); it3++) //删除对应的teacher_course
+			if(it3->teacher_id == it->id) //找到该老师的课程
+				db_teacher_course.getData().erase(it3);
+		db_teacher_course.putData();
+		
 		cout << "删除成功！" << endl;
 	}
 	else
@@ -454,6 +482,36 @@ void print_teacher_course_info(vector<teacher_course>& vtc)
 		tb << it->course_id;
 		tb << course_id2name(it->course_id);
 	}
+	tb.put();
+}
+
+void print_teacher_course_info_teacher_only(vector<teacher_course>& vtc)
+{
+	tablemaker tb(2);
+	tb << "教师编号";
+	tb << "教师名称";
+	
+	for(vector<teacher_course>::iterator it=vtc.begin(); it!=vtc.end(); it++)
+	{
+		tb << it->teacher_id;
+		tb << teacher_id2name(it->teacher_id);
+	}
+	tb.put();
+}
+
+void print_teacher_course_info(teacher_course tc)
+{
+	tablemaker tb(4);
+	tb << "教师编号";
+	tb << "教师名称";
+	tb << "课程编号";
+	tb << "课程名";
+	
+	tb << tc.teacher_id;
+	tb << teacher_id2name(tc.teacher_id);
+	tb << tc.course_id;
+	tb << course_id2name(tc.course_id);
+	tb.put();
 }
 
 void print_course_info()
@@ -482,6 +540,7 @@ void print_course_info(course s)
 	tb << s.id;
 	tb << s.name;
 	tb << s.credit;
+	tb.put(false);
 }
 
 vector<course>::iterator choose_course() //根据用户输入选择课程（并打印课程信息）
@@ -583,9 +642,9 @@ void add_course()
 	printf("请输入课程名称：");
 	cin >> ns.name;
 	ns.credit = getinput<int>("请输入学分：");
-	bool flag = true;
+	bool flag_has_teacher = true;
 	vector<teacher_course> vtc;
-	while(flag)
+	while(flag_has_teacher)
 	{
 		cout << "请添加上课教师：" << endl;
 		vector<teacher>::iterator it = choose_teacher();
@@ -597,19 +656,26 @@ void add_course()
 		tc.course_id = ns.id;
 		vtc.push_back(tc);
 
-		print_teacher_course_info(vtc);
 
-		flag = yesorno("继续添加");
+		cout << "目前已选教师名单：" << endl;
+		print_teacher_course_info_teacher_only(vtc);
+
+		flag_has_teacher = yesorno("继续添加上课教师");
 	}
-	if(yesorno("确认添加"))
+	
+	for(vector<teacher_course>::iterator it_tc=vtc.begin(); it_tc!=vtc.end(); it_tc++)
+		db_teacher_course.getData().push_back(*it_tc);
+	db_teacher_course.putData();
+	
+	if(yesorno("确认添加课程"))
 	{
 		db_course.getData().push_back(ns);
 		db_course.putData();
-		printf("添加成功！\n");
+		printf("添加课程成功！\n");
 	}
 	else
-		printf("取消添加。");
-	if(yesorno("继续添加"))
+		printf("取消添加课程。\n");
+	if(yesorno("继续添加课程"))
 		add_course();
 }
 
@@ -692,7 +758,7 @@ char* course_id2name(int course_id)
 		return it->name;
 }
 
-void print_student_couese_info()
+void print_student_course_info()
 {
 	//打印选课信息
 	tablemaker tb(4);
@@ -916,6 +982,34 @@ void welcome_page()
 	tb.put(false);
 }
 
+void add_teacher_course()
+{
+	vector<teacher>::iterator it = choose_teacher();
+	if(it == db_teacher.getData().end())
+		return;
+		
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return;
+	
+	teacher_course nst;
+	nst.teacher_id = it->id;
+	nst.course_id = it2->id;
+	
+	cout << "信息如下：" << endl;
+	print_teacher_course_info(nst);
+	
+	if(yesorno("确认提交"))
+	{
+		db_teacher_course.getData().push_back(nst);
+		db_teacher_course.putData();
+		cout << "提交成功！" << endl;
+	}
+	
+	if(yesorno("是否继续添加"))
+		add_teacher_course();
+}
+
 int main()
 {
 	ifstream infile("config/school.config");
@@ -946,7 +1040,7 @@ int main()
 	a.bind("4_del_course", del_course);
 	a.bind("5_change_course", chg_course);
 
-	a.bind("3_edit_student_course", print_student_couese_info);
+	a.bind("3_edit_student_course", print_student_course_info);
 	a.bind("1_add_student_course", add_student_course);
 	a.bind("2_del_student_course", del_student_course);
 

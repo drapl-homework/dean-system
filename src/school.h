@@ -154,3 +154,21 @@ struct teacher_course //教师上课数据项
 	int teacher_id; //教师编号
 	int course_id; //课程编号
 };
+
+class teacher_course_teacher_id_equal
+{
+	public:
+		teacher_course_teacher_id_equal(int a): x(a) {}
+		bool operator()(teacher_course s1) { return x == s1.teacher_id;}
+	private:
+		int x;
+};
+
+class teacher_course_course_id_equal
+{
+	public:
+		teacher_course_course_id_equal(int a): x(a) {}
+		bool operator()(teacher_course s1) { return x == s1.course_id;}
+	private:
+		int x;
+};
