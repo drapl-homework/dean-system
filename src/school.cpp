@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cstring>
+#include <iomanip>
 
 using namespace std;
 
@@ -23,18 +24,26 @@ T getinput(string s)
 	return tmp;
 }
 
-bool yesorno(string tips)
+bool yesorno(string tips) //选择“是”“否”
 {
 	char flag;
 	while(not (flag == 'y' or flag == 'Y' or flag == 'N' or flag == 'n' ))
 	{
-		cout << tips;
+		cout << tips << "(y/n)？";
 		cin >> flag;
 	}
 	if(flag == 'y' or flag == 'Y')
 		return true;
 	if(flag == 'n' or flag == 'N')
 		return false;
+}
+
+char* student_id2name(int student_id)
+{
+		vector<student>::iterator it = find_if(db_student.getData().begin(),
+			db_student.getData().end(),
+			student_id_equal(student_id));
+		return it->name;
 }
 
 void print_student_info()
@@ -53,6 +62,65 @@ void print_student_info(student s)
 	printf("%15s%15s\n", "学号", "姓名");
 	printf("%15d%15s\n", s.id,
 			s.name);
+}
+
+vector<student>::iterator choose_student() //根据用户输入选择学生（并打印学生信息）
+{
+	ifstream infile("config/choose_student.config");
+	MenuCreator a(infile);
+	bool flag = false;
+	vector<student>::iterator it;
+	int userinput,student_id;
+	string student_name;
+	print_student_info();
+	while(not flag)
+	{
+		int selected = a.print_and_choose();
+		switch(selected)
+		{
+			case 1:
+				userinput = getinput<int>("请输入序号：");
+				if(userinput > db_student.getData().size() or userinput <= 0)
+				{
+					cout << "无此序号。" << endl;
+					break;
+				}
+				it = db_student.getData().begin() + userinput -1;
+				flag = true;
+				break;
+			case 2:
+				student_id = getinput<int>("请输入学号：");
+				it = find_if(db_student.getData().begin(),
+					db_student.getData().end(),
+					student_id_equal(student_id));
+
+				if(it == db_student.getData().end())
+					cout << "无此学号" << endl;
+				else
+					flag = true;
+				break;
+
+			case 3:
+				student_name = getinput<string>("请输入姓名：");
+				it = find_if(db_student.getData().begin(),
+					db_student.getData().end(),
+					student_name_equal(student_name));
+
+				if(it == db_student.getData().end())
+					cout << "无此姓名." << endl;
+				else
+					flag = true;
+				break;
+			
+			default:
+				return db_student.getData().end();
+				break;
+		}
+	}
+
+	cout << "学生信息如下：" << endl;
+	print_student_info(*it);
+	return it;
 }
 
 void student_sort_by_id_less()
@@ -74,7 +142,7 @@ void add_student()
 	cin >> ns.id;
 	printf("请输入姓名：");
 	cin >> ns.name;
-	if(yesorno("确认添加(y/n)？"))
+	if(yesorno("确认添加"))
 	{
 		db_student.getData().push_back(ns);
 		db_student.putData();
@@ -82,163 +150,75 @@ void add_student()
 	}
 	else
 		printf("取消添加。");
-	if(yesorno("继续添加（y/n）？"))
+	if(yesorno("继续添加"))
 		add_student();
 }
 
-void del_student_by_id()
+void del_student()
 {
-	int id;
-	cout << "请输入学号：";
-	cin >> id;
-	vector<student>::iterator it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(id));
-
+	vector<student>::iterator it = choose_student();
 	if(it == db_student.getData().end())
-		cout << "无此id." << endl;
-	else
+		return;
+	
+	if(yesorno("是否确定删除"))
 	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-		if(yesorno("是否确定删除(y/n)？"))
+		db_student.getData().erase(it);
+		db_student.putData();
+		cout << "删除成功！" << endl;
+	}
+	else
+		cout << "取消删除。" << endl;
+
+	if(yesorno("是否继续删除"))
+		del_student();
+}
+
+void chg_student()
+{
+	vector<student>::iterator it = choose_student();
+	if(it == db_student.getData().end())
+		return;
+		
+	if(yesorno("是否确定修改"))
+	{
+		bool flag = false;
+		if(yesorno("是否修改学号"))
 		{
-			db_student.getData().erase(it);
+			flag = true;
+			int newid;
+			cout << "输入新学号：";
+			cin >> newid;
+			it->id = newid;
+		}
+		if(yesorno("是否修改姓名"))
+		{
+			flag = true;
+			char newname[35];
+			cout << "输入新姓名：";
+			cin >> newname;
+			strcpy(it->name, newname);
+		}
+		if(flag)
+		{
 			db_student.putData();
-			cout << "删除成功！" << endl;
+			cout << "修改成功！" << endl;
 		}
 		else
-			cout << "取消删除。" << endl;
+			cout << "未做改动。" << endl;
 	}
-	if(yesorno("是否继续删除(y/n)？"))
-		del_student_by_id();
+	else
+		cout << "取消修改。" << endl;
+
+	if(yesorno("是否继续修改"))
+		chg_student();
 }
 
-void del_student_by_name()
+char* teacher_id2name(int teacher_id)
 {
-	string name;
-	cout << "请输入姓名：";
-	cin >> name;
-	vector<student>::iterator it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_name_equal(name));
-
-	if(it == db_student.getData().end())
-		cout << "无此姓名." << endl;
-	else
-	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-		if(yesorno("是否确定删除(y/n)？"))
-		{
-			db_student.getData().erase(it);
-			db_student.putData();
-			cout << "删除成功！" << endl;
-		}
-		else
-			cout << "取消删除。" << endl;
-	}
-	if(yesorno("是否继续删除(y/n)？"))
-		del_student_by_id();
-}
-
-void chg_student_by_id()
-{
-	int id;
-	cout << "请输入学号：";
-	cin >> id;
-	vector<student>::iterator it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(id));
-
-	if(it == db_student.getData().end())
-		cout << "无此id." << endl;
-	else
-	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-		if(yesorno("是否确定修改(y/n)？"))
-		{
-			bool flag = false;
-			if(yesorno("是否修改学号(y/n)？"))
-			{
-				flag = true;
-				int newid;
-				cout << "输入新学号：";
-				cin >> newid;
-				it->id = newid;
-			}
-			if(yesorno("是否修改姓名(y/n)？"))
-			{
-				flag = true;
-				char newname[35];
-				cout << "输入新姓名：";
-				cin >> newname;
-				strcpy(it->name, newname);
-			}
-			if(flag)
-			{
-				db_student.putData();
-				cout << "修改成功！" << endl;
-			}
-			else
-				cout << "未做改动。" << endl;
-		}
-		else
-			cout << "取消修改。" << endl;
-	}
-	if(yesorno("是否继续修改(y/n)？"))
-		chg_student_by_id();
-}
-
-void chg_student_by_name()
-{
-	string name;
-	cout << "请输入姓名：";
-	cin >> name;
-	vector<student>::iterator it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_name_equal(name));
-
-	if(it == db_student.getData().end())
-		cout << "无此姓名." << endl;
-	else
-	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-		if(yesorno("是否确定修改(y/n)？"))
-		{
-			bool flag = false;
-			if(yesorno("是否修改学号(y/n)？"))
-			{
-				flag = true;
-				int newid;
-				cout << "输入新学号：";
-				cin >> newid;
-				it->id = newid;
-			}
-			if(yesorno("是否修改姓名(y/n)？"))
-			{
-				flag = true;
-				char newname[35];
-				cout << "输入新姓名：";
-				cin >> newname;
-				strcpy(it->name, newname);
-			}
-			if(flag)
-			{
-				db_student.putData();
-				cout << "修改成功！" << endl;
-			}
-			else
-				cout << "未做改动。" << endl;
-		}
-		else
-			cout << "取消修改。" << endl;
-	}
-
-	if(yesorno("是否继续修改(y/n)？"))
-		chg_student_by_name();
+		vector<teacher>::iterator it = find_if(db_teacher.getData().begin(),
+			db_teacher.getData().end(),
+			teacher_id_equal(teacher_id));
+		return it->name;
 }
 
 // 复制粘贴替换：stu*dent->teacher, 学*号->教师编号，学生->教师
@@ -272,6 +252,65 @@ void teacher_sort_by_id_more()
 			teacher_id_more);
 }
 
+vector<teacher>::iterator choose_teacher() //根据用户输入选择教师（并打印教师信息）
+{
+	ifstream infile("config/choose_teacher.config");
+	MenuCreator a(infile);
+	bool flag = false;
+	vector<teacher>::iterator it;
+	int selected = a.print_and_choose();
+	int userinput,teacher_id;
+	string teacher_name;
+	print_teacher_info();
+	while(not flag)
+	{
+		switch(selected)
+		{
+			case 1:
+				userinput = getinput<int>("请输入序号：");
+				if(userinput > db_teacher.getData().size() or userinput <= 0)
+				{
+					cout << "无此序号。" << endl;
+					break;
+				}
+				it = db_teacher.getData().begin() + userinput -1;
+				flag = true;
+				break;
+			case 2:
+				teacher_id = getinput<int>("请输入教师编号：");
+				it = find_if(db_teacher.getData().begin(),
+					db_teacher.getData().end(),
+					teacher_id_equal(teacher_id));
+
+				if(it == db_teacher.getData().end())
+					cout << "无此教师编号" << endl;
+				else
+					flag = true;
+				break;
+
+			case 3:
+				teacher_name = getinput<string>("请输入姓名：");
+				it = find_if(db_teacher.getData().begin(),
+					db_teacher.getData().end(),
+					teacher_name_equal(teacher_name));
+
+				if(it == db_teacher.getData().end())
+					cout << "无此姓名." << endl;
+				else
+					flag = true;
+				break;
+			
+			default:
+				return db_teacher.getData().end();
+				break;
+		}
+	}
+
+	cout << "教师信息如下：" << endl;
+	print_teacher_info(*it);
+	return it;
+}
+
 void add_teacher()
 {
 	teacher ns;
@@ -279,7 +318,7 @@ void add_teacher()
 	cin >> ns.id;
 	printf("请输入姓名：");
 	cin >> ns.name;
-	if(yesorno("确认添加(y/n)？"))
+	if(yesorno("确认添加"))
 	{
 		db_teacher.getData().push_back(ns);
 		db_teacher.putData();
@@ -287,163 +326,84 @@ void add_teacher()
 	}
 	else
 		printf("取消添加。");
-	if(yesorno("继续添加（y/n）？"))
+	if(yesorno("继续添加"))
 		add_teacher();
 }
 
-void del_teacher_by_id()
+void del_teacher()
 {
-	int id;
-	cout << "请输入教师编号：";
-	cin >> id;
-	vector<teacher>::iterator it = find_if(db_teacher.getData().begin(),
-			db_teacher.getData().end(),
-			teacher_id_equal(id));
-
+	vector<teacher>::iterator it = choose_teacher();
 	if(it == db_teacher.getData().end())
-		cout << "无此id." << endl;
-	else
+		return;
+
+	if(yesorno("是否确定删除"))
 	{
-		cout << "教师信息如下：" << endl;
-		print_teacher_info(*it);
-		if(yesorno("是否确定删除(y/n)？"))
+		db_teacher.getData().erase(it);
+		db_teacher.putData();
+		cout << "删除成功！" << endl;
+	}
+	else
+		cout << "取消删除。" << endl;
+
+	if(yesorno("是否继续删除"))
+		del_teacher();
+}
+
+void chg_teacher()
+{
+	vector<teacher>::iterator it = choose_teacher();
+	if(it == db_teacher.getData().end())
+		return;
+
+	if(yesorno("是否确定修改"))
+	{
+		bool flag = false;
+		if(yesorno("是否修改教师编号"))
 		{
-			db_teacher.getData().erase(it);
+			flag = true;
+			int newid;
+			cout << "输入新教师编号：";
+			cin >> newid;
+			it->id = newid;
+		}
+		if(yesorno("是否修改姓名"))
+		{
+			flag = true;
+			char newname[35];
+			cout << "输入新姓名：";
+			cin >> newname;
+			strcpy(it->name, newname);
+		}
+		if(flag)
+		{
 			db_teacher.putData();
-			cout << "删除成功！" << endl;
+			cout << "修改成功！" << endl;
 		}
 		else
-			cout << "取消删除。" << endl;
+			cout << "未做改动。" << endl;
 	}
-	if(yesorno("是否继续删除(y/n)？"))
-		del_teacher_by_id();
+	else
+		cout << "取消修改。" << endl;
+
+	if(yesorno("是否继续修改"))
+		chg_teacher();
 }
 
-void del_teacher_by_name()
+char* course_id2name(int);
+void print_teacher_course_info(vector<teacher_course>& vtc)
 {
-	string name;
-	cout << "请输入姓名：";
-	cin >> name;
-	vector<teacher>::iterator it = find_if(db_teacher.getData().begin(),
-			db_teacher.getData().end(),
-			teacher_name_equal(name));
-
-	if(it == db_teacher.getData().end())
-		cout << "无此姓名." << endl;
-	else
+	for(vector<teacher_course>::iterator it=vtc.begin(); it!=vtc.end(); it++)
 	{
-		cout << "教师信息如下：" << endl;
-		print_teacher_info(*it);
-		if(yesorno("是否确定删除(y/n)？"))
-		{
-			db_teacher.getData().erase(it);
-			db_teacher.putData();
-			cout << "删除成功！" << endl;
-		}
-		else
-			cout << "取消删除。" << endl;
+		cout << std::setw(15) << setfill(' ') << left
+			<< "序号" << "教师编号" << "教师名称" <<
+			"课程编号" << "课程名";
+		cout << setw(15) << setfill(' ') << left
+			<< it - vtc.begin() + 1 
+			<< it->teacher_id 
+			<< teacher_id2name(it->teacher_id)
+			<< it->course_id
+			<< course_id2name(it->course_id);
 	}
-	if(yesorno("是否继续删除(y/n)？"))
-		del_teacher_by_id();
-}
-
-void chg_teacher_by_id()
-{
-	int id;
-	cout << "请输入教师编号：";
-	cin >> id;
-	vector<teacher>::iterator it = find_if(db_teacher.getData().begin(),
-			db_teacher.getData().end(),
-			teacher_id_equal(id));
-
-	if(it == db_teacher.getData().end())
-		cout << "无此id." << endl;
-	else
-	{
-		cout << "教师信息如下：" << endl;
-		print_teacher_info(*it);
-		if(yesorno("是否确定修改(y/n)？"))
-		{
-			bool flag = false;
-			if(yesorno("是否修改教师编号(y/n)？"))
-			{
-				flag = true;
-				int newid;
-				cout << "输入新教师编号：";
-				cin >> newid;
-				it->id = newid;
-			}
-			if(yesorno("是否修改姓名(y/n)？"))
-			{
-				flag = true;
-				char newname[35];
-				cout << "输入新姓名：";
-				cin >> newname;
-				strcpy(it->name, newname);
-			}
-			if(flag)
-			{
-				db_teacher.putData();
-				cout << "修改成功！" << endl;
-			}
-			else
-				cout << "未做改动。" << endl;
-		}
-		else
-			cout << "取消修改。" << endl;
-	}
-	if(yesorno("是否继续修改(y/n)？"))
-		chg_teacher_by_id();
-}
-
-void chg_teacher_by_name()
-{
-	string name;
-	cout << "请输入姓名：";
-	cin >> name;
-	vector<teacher>::iterator it = find_if(db_teacher.getData().begin(),
-			db_teacher.getData().end(),
-			teacher_name_equal(name));
-
-	if(it == db_teacher.getData().end())
-		cout << "无此姓名." << endl;
-	else
-	{
-		cout << "教师信息如下：" << endl;
-		print_teacher_info(*it);
-		if(yesorno("是否确定修改(y/n)？"))
-		{
-			bool flag = false;
-			if(yesorno("是否修改教师编号(y/n)？"))
-			{
-				flag = true;
-				int newid;
-				cout << "输入新教师编号：";
-				cin >> newid;
-				it->id = newid;
-			}
-			if(yesorno("是否修改姓名(y/n)？"))
-			{
-				flag = true;
-				char newname[35];
-				cout << "输入新姓名：";
-				cin >> newname;
-				strcpy(it->name, newname);
-			}
-			if(flag)
-			{
-				db_teacher.putData();
-				cout << "修改成功！" << endl;
-			}
-			else
-				cout << "未做改动。" << endl;
-		}
-		else
-			cout << "取消修改。" << endl;
-	}
-
-	if(yesorno("是否继续修改(y/n)？"))
-		chg_teacher_by_name();
 }
 
 void print_course_info()
@@ -464,6 +424,64 @@ void print_course_info(course s)
 	printf("%15d%15s%15d\n", s.id,
 			s.name,s.credit);
 }
+
+vector<course>::iterator choose_course() //根据用户输入选择课程（并打印课程信息）
+{
+	ifstream infile("config/choose_course.config");
+	MenuCreator a(infile);
+	bool flag = false;
+	vector<course>::iterator it;
+	int userinput,course_id;
+	string course_name;
+	while(not flag)
+	{
+		print_course_info();
+		int selected = a.print_and_choose();
+		switch(selected)
+		{
+			case 1:
+				userinput = getinput<int>("请输入序号：");
+				if(userinput > db_course.getData().size() or userinput <= 0)
+				{
+					cout << "无此序号。" << endl;
+					break;
+				}
+				it = db_course.getData().begin() + userinput -1;
+				flag = true;
+				break;
+			case 2:
+				course_id = getinput<int>("请输入课程编号：");
+				it = find_if(db_course.getData().begin(),
+					db_course.getData().end(),
+					course_id_equal(course_id));
+
+				if(it == db_course.getData().end())
+					cout << "无此课程编号" << endl;
+				else
+					flag = true;
+				break;
+
+			case 3:
+				course_name = getinput<string>("请输入课程名称：");
+				it = find_if(db_course.getData().begin(),
+					db_course.getData().end(),
+					course_name_equal(course_name));
+
+				if(it == db_course.getData().end())
+					cout << "无此课程名称." << endl;
+				else
+					flag = true;
+				break;
+			default:
+				return db_course.getData().end();
+		}
+	}
+
+	cout << "课程信息如下：" << endl;
+	print_course_info(*it);
+	return it;
+}
+
 
 void course_sort_by_id_less()
 {
@@ -492,13 +510,29 @@ void course_sort_by_credit_more()
 void add_course()
 {
 	course ns;
-	printf("请输入课程编号：");
-	cin >> ns.id;
+	ns.id = getinput<int>("请输入课程编号：");
 	printf("请输入课程名称：");
 	cin >> ns.name;
-	printf("请输入学分：");
-	cin >> ns.credit;
-	if(yesorno("确认添加(y/n)？"))
+	ns.credit = getinput<int>("请输入学分：");
+	bool flag = true;
+	vector<teacher_course> vtc;
+	while(flag)
+	{
+		cout << "请添加上课教师：" << endl;
+		vector<teacher>::iterator it = choose_teacher();
+		if(it == db_teacher.getData().end())
+		return;
+
+		teacher_course tc;
+		tc.teacher_id = it->id;
+		tc.course_id = ns.id;
+		vtc.push_back(tc);
+
+		print_teacher_course_info(vtc);
+
+		flag = yesorno("继续添加");
+	}
+	if(yesorno("确认添加"))
 	{
 		db_course.getData().push_back(ns);
 		db_course.putData();
@@ -506,186 +540,72 @@ void add_course()
 	}
 	else
 		printf("取消添加。");
-	if(yesorno("继续添加（y/n）？"))
+	if(yesorno("继续添加"))
 		add_course();
 }
 
-void del_course_by_id()
+void del_course()
 {
-	int id;
-	cout << "请输入课程编号：";
-	cin >> id;
-	vector<course>::iterator it = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_id_equal(id));
-
+	vector<course>::iterator it=choose_course();
 	if(it == db_course.getData().end())
-		cout << "无此id." << endl;
-	else
+		return;
+	if(yesorno("是否确定删除"))
 	{
-		cout << "课程信息如下：" << endl;
-		print_course_info(*it);
-		if(yesorno("是否确定删除(y/n)？"))
+		db_course.getData().erase(it);
+		db_course.putData();
+		cout << "删除成功！" << endl;
+	}
+	else
+		cout << "取消删除。" << endl;
+
+	if(yesorno("是否继续删除"))
+		del_course();
+}
+
+void chg_course()
+{
+	vector<course>::iterator it=choose_course();
+	if(it == db_course.getData().end())
+		return;
+	if(yesorno("是否确定修改"))
+	{
+		bool flag = false;
+		if(yesorno("是否修改课程编号"))
 		{
-			db_course.getData().erase(it);
+			flag = true;
+			int newid;
+			cout << "输入新课程编号：";
+			cin >> newid;
+			it->id = newid;
+		}
+		if(yesorno("是否修改课程名称"))
+		{
+			flag = true;
+			char newname[35];
+			cout << "输入新课程名称：";
+			cin >> newname;
+			strcpy(it->name, newname);
+		}
+		if(yesorno("是否修改学分"))
+		{
+			flag = true;
+			int newcredit;
+			cout << "输入新学分：";
+			cin >> newcredit;
+			it->credit = newcredit;
+		}
+		if(flag)
+		{
 			db_course.putData();
-			cout << "删除成功！" << endl;
+			cout << "修改成功！" << endl;
 		}
 		else
-			cout << "取消删除。" << endl;
+			cout << "未做改动。" << endl;
 	}
-	if(yesorno("是否继续删除(y/n)？"))
-		del_course_by_id();
-}
-
-void del_course_by_name()
-{
-	string name;
-	cout << "请输入课程名称：";
-	cin >> name;
-	vector<course>::iterator it = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_name_equal(name));
-
-	if(it == db_course.getData().end())
-		cout << "无此课程名称." << endl;
 	else
-	{
-		cout << "课程信息如下：" << endl;
-		print_course_info(*it);
-		if(yesorno("是否确定删除(y/n)？"))
-		{
-			db_course.getData().erase(it);
-			db_course.putData();
-			cout << "删除成功！" << endl;
-		}
-		else
-			cout << "取消删除。" << endl;
-	}
-	if(yesorno("是否继续删除(y/n)？"))
-		del_course_by_id();
-}
-
-void chg_course_by_id()
-{
-	int id;
-	cout << "请输入课程编号：";
-	cin >> id;
-	vector<course>::iterator it = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_id_equal(id));
-
-	if(it == db_course.getData().end())
-		cout << "无此id." << endl;
-	else
-	{
-		cout << "课程信息如下：" << endl;
-		print_course_info(*it);
-		if(yesorno("是否确定修改(y/n)？"))
-		{
-			bool flag = false;
-			if(yesorno("是否修改课程编号(y/n)？"))
-			{
-				flag = true;
-				int newid;
-				cout << "输入新课程编号：";
-				cin >> newid;
-				it->id = newid;
-			}
-			if(yesorno("是否修改课程名称(y/n)？"))
-			{
-				flag = true;
-				char newname[35];
-				cout << "输入新课程名称：";
-				cin >> newname;
-				strcpy(it->name, newname);
-			}
-			if(yesorno("是否修改学分(y/n)？"))
-			{
-				flag = true;
-				int newcredit;
-				cout << "输入新学分：";
-				cin >> newcredit;
-				it->credit = newcredit;
-			}
-			if(flag)
-			{
-				db_course.putData();
-				cout << "修改成功！" << endl;
-			}
-			else
-				cout << "未做改动。" << endl;
-		}
-		else
-			cout << "取消修改。" << endl;
-	}
-	if(yesorno("是否继续修改(y/n)？"))
-		chg_course_by_id();
-}
-
-void chg_course_by_name()
-{
-	string name;
-	cout << "请输入课程名称：";
-	cin >> name;
-	vector<course>::iterator it = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_name_equal(name));
-
-	if(it == db_course.getData().end())
-		cout << "无此课程名称." << endl;
-	else
-	{
-		cout << "课程信息如下：" << endl;
-		print_course_info(*it);
-		if(yesorno("是否确定修改(y/n)？"))
-		{
-			bool flag = false;
-			if(yesorno("是否修改课程编号(y/n)？"))
-			{
-				flag = true;
-				int newid;
-				cout << "输入新课程编号：";
-				cin >> newid;
-				it->id = newid;
-			}
-			if(yesorno("是否修改课程名称(y/n)？"))
-			{
-				flag = true;
-				char newname[35];
-				cout << "输入新课程名称：";
-				cin >> newname;
-				strcpy(it->name, newname);
-			}
-			if(yesorno("是否修改学分(y/n)？"))
-			{
-				flag = true;
-				int newcredit;
-				cout << "输入新学分：";
-				cin >> newcredit;
-				it->credit = newcredit;
-			}
-			if(flag)
-			{
-				db_course.putData();
-				cout << "修改成功！" << endl;
-			}
-			else
-				cout << "未做改动。" << endl;
-		}
-		else
-			cout << "取消修改。" << endl;
-	}
-	if(yesorno("是否继续修改(y/n)？"))
-		chg_course_by_name();
-}
-
-char* student_id2name(int student_id)
-{
-		vector<student>::iterator it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(student_id));
-		return it->name;
+		cout << "取消修改。" << endl;
+	if(yesorno("是否继续修改"))
+		chg_course();
 }
 
 char* course_id2name(int course_id)
@@ -754,39 +674,10 @@ void print_course_schedule(int course_id)
 
 void get_per_student_course()
 {
-		print_student_info();
-	bool flag = false; //是否取得信息
-	vector<student>::iterator it;
+	vector<student>::iterator it=choose_student();
+	if(it == db_student.getData().end())
+		return;
 
-	if(yesorno("输入学生学号(y/n)？"))
-	{
-		int student_id;
-		cout << "请输入学生学号：";
-		cin >> student_id;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(student_id));
-
-		if(it == db_student.getData().end())
-			cout << "无此学号" << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入学生姓名(y/n)？"))
-	{
-		char student_name[35];
-		cout << "请输入学生姓名：";
-		cin >> student_name;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_name_equal(student_name));
-
-		if(it == db_student.getData().end())
-			cout << "无此姓名." << endl;
-		else
-			flag = true;
-	}
-	
 	cout << "学生课表如下：" << endl;
 	print_student_info(*it);
 	
@@ -796,126 +687,24 @@ void get_per_student_course()
 void get_per_course()
 {
 	bool flag = false;
-	vector<course>::iterator it2;
-	print_course_info();
-	if(yesorno("输入课程编号(y/n)？"))
-	{
-		int course_id;
-		cout << "请输入课程编号：";
-		cin >> course_id;
-		it2 = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_id_equal(course_id));
 
-		if(it2 == db_course.getData().end())
-			cout << "无此编号." << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入课程名称(y/n)？"))
-	{
-		char course_name[35];
-		cout << "请输入课程名称：";
-		cin >> course_name;
-		it2 = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_name_equal(course_name));
-
-		if(it2 == db_course.getData().end())
-			cout << "无此课程." << endl;
-		else
-			flag= true;
-	}
-	
-	if(flag)
-	{
-		cout << "课程信息如下：" << endl;
-		print_course_info(*it2);
-	}
-
-
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return;
 	cout << "课程学生信息如下：" << endl;
+
 	print_course_schedule(it2->id);
 }
 
 void add_student_course()
 {
-	print_student_info();
-	bool flag = false; //是否取得信息
-	vector<student>::iterator it;
-
-	if(yesorno("输入学生学号(y/n)？"))
-	{
-		int student_id;
-		cout << "请输入学生学号：";
-		cin >> student_id;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(student_id));
-
-		if(it == db_student.getData().end())
-			cout << "无此学号" << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入学生姓名(y/n)？"))
-	{
-		char student_name[35];
-		cout << "请输入学生姓名：";
-		cin >> student_name;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_name_equal(student_name));
-
-		if(it == db_student.getData().end())
-			cout << "无此姓名." << endl;
-		else
-			flag = true;
-	}
-	
-	if(flag)
-	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-	}
-	
-	flag = false;
-	vector<course>::iterator it2;
-	print_course_info();
-	if(yesorno("输入课程编号(y/n)？"))
-	{
-		int course_id;
-		cout << "请输入课程编号：";
-		cin >> course_id;
-		it2 = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_id_equal(course_id));
-
-		if(it2 == db_course.getData().end())
-			cout << "无此编号." << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入课程名称(y/n)？"))
-	{
-		char course_name[35];
-		cout << "请输入课程名称：";
-		cin >> course_name;
-		it2 = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_name_equal(course_name));
-
-		if(it2 == db_course.getData().end())
-			cout << "无此课程." << endl;
-		else
-			flag= true;
-	}
-	
-	if(flag)
-	{
-		cout << "课程信息如下：" << endl;
-		print_course_info(*it2);
-	}
+	vector<student>::iterator it = choose_student();
+	if(it == db_student.getData().end())
+		return;
+		
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return;
 	
 	student_course nst;
 	nst.student_id = it->id;
@@ -925,93 +714,29 @@ void add_student_course()
 	cout << "选课信息如下：" << endl;
 	print_student_course_info(nst);
 	
-	if(yesorno("确认提交(y/n)？"))
+	if(yesorno("确认提交"))
 	{
 		db_student_course.getData().push_back(nst);
 		db_student_course.putData();
 		cout << "提交成功！" << endl;
 	}
 	
-	if(yesorno("是否继续添加(y/n)？"))
+	if(yesorno("是否继续添加"))
 		add_student_course();
 }
 
 vector<student_course>::iterator get_student_course()
 {
-	print_student_info();
-	bool flag = false; //是否取得信息
-	vector<student>::iterator it;
-
-	if(yesorno("输入学生学号(y/n)？"))
-	{
-		int student_id;
-		cout << "请输入学生学号：";
-		cin >> student_id;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(student_id));
-
-		if(it == db_student.getData().end())
-			cout << "无此学号" << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入学生姓名(y/n)？"))
-	{
-		char student_name[35];
-		cout << "请输入学生姓名：";
-		cin >> student_name;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_name_equal(student_name));
-
-		if(it == db_student.getData().end())
-			cout << "无此姓名." << endl;
-		else
-			flag = true;
-	}
-	
-	if(flag)
-	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-		cout << "学生课程信息如下：" << endl;
-		print_student_schedule(it->id);
-	}
-	
-	flag = false;
-	vector<course>::iterator it2;
-	if(yesorno("输入课程编号(y/n)？"))
-	{
-		int course_id;
-		cout << "请输入课程编号：";
-		cin >> course_id;
-		it2 = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_id_equal(course_id));
-
-		if(it2 == db_course.getData().end())
-			cout << "无此编号." << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入课程名称(y/n)？"))
-	{
-		char course_name[35];
-		cout << "请输入课程名称：";
-		cin >> course_name;
-		it2 = find_if(db_course.getData().begin(),
-			db_course.getData().end(),
-			course_name_equal(course_name));
-
-		if(it2 == db_course.getData().end())
-			cout << "无此课程." << endl;
-		else
-			flag= true;
-	}
-	
-	vector<student_course>::iterator it3;
-	it3 = find_if(db_student_course.getData().begin(),
+	vector<student>::iterator it=choose_student();
+	if(it == db_student.getData().end())
+		return db_student_course.getData().end();;
+		
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return db_student_course.getData().end();
+		
+	vector<student_course>::iterator it3; it3 = find_if( 
+	db_student_course.getData().begin(),
 		db_student_course.getData().end(),
 		student_course_equal(it->id,it2->id));
 	return it3;
@@ -1021,44 +746,15 @@ void print_student_course()
 {
 	print_student_info();
 	bool flag = false; //是否取得信息
-	vector<student>::iterator it;
-
-	if(yesorno("输入学生学号(y/n)？"))
-	{
-		int student_id;
-		cout << "请输入学生学号：";
-		cin >> student_id;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_id_equal(student_id));
-
-		if(it == db_student.getData().end())
-			cout << "无此学号" << endl;
-		else
-			flag = true;
-	}
-	if(not flag and yesorno("输入学生姓名(y/n)？"))
-	{
-		char student_name[35];
-		cout << "请输入学生姓名：";
-		cin >> student_name;
-		it = find_if(db_student.getData().begin(),
-			db_student.getData().end(),
-			student_name_equal(student_name));
-
-		if(it == db_student.getData().end())
-			cout << "无此姓名." << endl;
-		else
-			flag = true;
-	}
+	vector<student>::iterator it = choose_student();
+	if(it == db_student.getData().end())
+		return;
 	
-	if(flag)
-	{
-		cout << "学生信息如下：" << endl;
-		print_student_info(*it);
-		cout << "学生课程信息如下：" << endl;
-		print_student_schedule(it->id);
-	}
+
+	cout << "学生信息如下：" << endl;
+	print_student_info(*it);
+	cout << "学生课程信息如下：" << endl;
+	print_student_schedule(it->id);
 
 }
 
@@ -1068,13 +764,13 @@ void del_student_course()
 	if(it3 == db_student_course.getData().end())
 		cout << "无此选课." << endl;
 	else
-		if(yesorno("确认删除(y/n)？"))
+		if(yesorno("确认删除"))
 		{
 			db_student_course.getData().erase(it3);
 			db_student_course.putData();
 			cout << "删除成功" << endl;
 		}
-	if(yesorno("是否继续删除(y/n)？"))
+	if(yesorno("是否继续删除"))
 		del_student_course();
 }
 
@@ -1084,13 +780,13 @@ void add_score()
 	if(it3 == db_student_course.getData().end())
 		cout << "无此选课." << endl;
 	else
-		if(yesorno("确认添加(y/n)？"))
+		if(yesorno("确认添加"))
 		{
 			int score = getinput<int>("请输入分数：");
 			it3->score = score;
 			db_student_course.putData();
 		}
-	if(yesorno("是否继续添加(y/n)？"))
+	if(yesorno("是否继续添加"))
 		add_score();
 }
 
@@ -1100,12 +796,12 @@ void del_score()
 	if(it3 == db_student_course.getData().end())
 		cout << "无此选课." << endl;
 	else
-		if(yesorno("确认删除(y/n)？"))
+		if(yesorno("确认删除"))
 		{
 			it3->score = -1;
 			db_student_course.putData();
 		}
-	if(yesorno("是否继续删除(y/n)？"))
+	if(yesorno("是否继续删除"))
 		del_score();
 
 }
@@ -1116,36 +812,27 @@ int main()
 	MenuCreator a(infile);
 	
 	a.bind("1_edit_student", print_student_info);
-	a.bind("4_del_student", print_student_info);
 	a.bind("1_student_sort_by_id_less", student_sort_by_id_less);
 	a.bind("2_student_sort_by_id_more", student_sort_by_id_more);
-	a.bind("1_del_student_by_id", del_student_by_id);
-	a.bind("2_del_student_by_name", del_student_by_name);
 	a.bind("3_add_student", add_student);
-	a.bind("1_chg_student_by_id",chg_student_by_id);
-	a.bind("2_chg_student_by_name",chg_student_by_name);
+	a.bind("4_del_student", del_student);
+	a.bind("5_change_student", chg_student);
 	
 	a.bind("1_edit_teacher", print_teacher_info);
-	a.bind("4_del_teacher", print_teacher_info);
 	a.bind("1_teacher_sort_by_id_less", teacher_sort_by_id_less);
 	a.bind("2_teacher_sort_by_id_more", teacher_sort_by_id_more);
-	a.bind("1_del_teacher_by_id", del_teacher_by_id);
-	a.bind("2_del_teacher_by_name", del_teacher_by_name);
 	a.bind("3_add_teacher", add_teacher);
-	a.bind("1_chg_teacher_by_id",chg_teacher_by_id);
-	a.bind("2_chg_teacher_by_name",chg_teacher_by_name);
+	a.bind("4_del_teacher", del_teacher);
+	a.bind("5_change_student", chg_teacher);
 	
 	a.bind("2_edit_course_list", print_course_info);
-	a.bind("4_del_course", print_course_info);
 	a.bind("1_course_sort_by_id_less", course_sort_by_id_less);
 	a.bind("20_course_sort_by_id_more", course_sort_by_id_more);
 	a.bind("21_course_sort_by_credit_less", course_sort_by_credit_less);
 	a.bind("22_course_sort_by_credit_more", course_sort_by_credit_more);
-	a.bind("1_del_course_by_id", del_course_by_id);
-	a.bind("2_del_course_by_name", del_course_by_name);
 	a.bind("3_add_course", add_course);
-	a.bind("1_chg_course_by_id",chg_course_by_id);
-	a.bind("2_chg_course_by_name",chg_course_by_name);
+	a.bind("4_del_course", del_course);
+	a.bind("5_change_course", chg_course);
 
 	a.bind("3_edit_student_course", print_student_couese_info);
 	a.bind("1_add_student_course", add_student_course);

@@ -156,6 +156,7 @@ class MenuCreator{
 		void execute();
 		int bind(string label, void(*function)());
 		int retext(string label, string text);
+		int print_and_choose();
 		menu* parse(vector<string>::iterator begin, vector<string>::iterator end, vector<string>::iterator& it);
 	private:
 		menu* topMenu;
@@ -177,9 +178,9 @@ MenuCreator::MenuCreator(ifstream& infile)
 	topMenu = parse(menustring.begin(), menustring.end(), it);
 }
 
-MenuCreator::~MenuCreator() //TODO
+/*MenuCreator::~MenuCreator() //TODO
 {
-}
+}*/
 
 void MenuCreator::execute()
 {
@@ -190,6 +191,12 @@ int MenuCreator::bind(string label, void(*function)())
 {
 	return topMenu->bind(label, function);
 }
+
+int MenuCreator::print_and_choose() //打印并等待用户选择
+{
+	return topMenu->print_and_choose();
+}
+
 
 int MenuCreator::retext(string label, string text)
 {
