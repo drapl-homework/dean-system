@@ -203,11 +203,18 @@ void chg_student()
 		bool flag = false;
 		if(yesorno("是否修改学号"))
 		{
-			flag = true;
-			int newid;
-			cout << "输入新学号：";
-			cin >> newid;
+			int newid = getinput<int>("输入新学号：");
+			vector<student>::iterator it2 = find_if(db_student.getData().begin(),
+				db_student.getData().end(),
+				student_id_equal(newid));
+		
+			if(it2 != db_student.getData().end()) //学号唯一
+			{
+				cout << "学号已存在！";
+				return;
+			}
 			it->id = newid;
+			flag = true;
 		}
 		if(yesorno("是否修改姓名"))
 		{
@@ -393,13 +400,20 @@ void chg_teacher()
 	if(yesorno("是否确定修改"))
 	{
 		bool flag = false;
-		if(yesorno("是否修改教师编号"))
+		if(yesorno("是否修改编号"))
 		{
-			flag = true;
-			int newid;
-			cout << "输入新教师编号：";
-			cin >> newid;
+			int newid = getinput<int>("输入新编号：");
+			vector<teacher>::iterator it2 = find_if(db_teacher.getData().begin(),
+				db_teacher.getData().end(),
+				teacher_id_equal(newid));
+		
+			if(it2 != db_teacher.getData().end()) //编号唯一
+			{
+				cout << "编号已存在！";
+				return;
+			}
 			it->id = newid;
+			flag = true;
 		}
 		if(yesorno("是否修改姓名"))
 		{
@@ -627,11 +641,18 @@ void chg_course()
 		bool flag = false;
 		if(yesorno("是否修改课程编号"))
 		{
-			flag = true;
-			int newid;
-			cout << "输入新课程编号：";
-			cin >> newid;
+			int newid = getinput<int>("输入新课程编号：");
+			vector<course>::iterator it2 = find_if(db_course.getData().begin(),
+				db_course.getData().end(),
+				course_id_equal(newid));
+		
+			if(it2 != db_course.getData().end()) //编号唯一
+			{
+				cout << "编号已存在！";
+				return;
+			}
 			it->id = newid;
+			flag = true;
 		}
 		if(yesorno("是否修改课程名称"))
 		{
