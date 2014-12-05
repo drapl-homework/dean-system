@@ -1,6 +1,7 @@
 #include "menu.h"
 #include "db.h"
 #include "school.h"
+#include "tablemaker.h"
 #include <cstdio>
 #include <iostream>
 #include <algorithm>
@@ -49,19 +50,27 @@ char* student_id2name(int student_id)
 void print_student_info()
 {
 	//打印学生信息
-	printf("%15s%15s%15s\n", "序号", "学号", "姓名");
+	tablemaker tb(2);
+	
+	tb << "学号";
+	tb << "姓名";
 	for(int i=0; i<db_student.getData().size(); i++)
-		printf("%15d%15d%15s\n", i+1,
-				db_student.getData()[i].id,
-				db_student.getData()[i].name);
+	{
+				tb << db_student.getData()[i].id;
+				tb << db_student.getData()[i].name;
+	}
+	tb.put();
 }
 
 void print_student_info(student s)
 {
 	//打印单个学生信息
-	printf("%15s%15s\n", "学号", "姓名");
-	printf("%15d%15s\n", s.id,
-			s.name);
+	tablemaker tb(2);
+	tb << "学号";
+	tb << "姓名";
+	tb << s.id;
+	tb << s.name;
+	tb.put();
 }
 
 vector<student>::iterator choose_student() //根据用户输入选择学生（并打印学生信息）
@@ -225,19 +234,26 @@ char* teacher_id2name(int teacher_id)
 void print_teacher_info()
 {
 	//打印教师信息
-	printf("%15s%15s%15s\n", "序号", "教师编号", "姓名");
+	tablemaker tb(2);
+	tb << "教师编号";
+	tb << "姓名";
 	for(int i=0; i<db_teacher.getData().size(); i++)
-		printf("%15d%15d%15s\n", i+1,
-				db_teacher.getData()[i].id,
-				db_teacher.getData()[i].name);
+	{
+		tb << db_teacher.getData()[i].id;
+		tb << db_teacher.getData()[i].name;
+	}
+	tb.put();
 }
 
 void print_teacher_info(teacher s)
 {
 	//打印单个教师信息
-	printf("%15s%15s\n", "教师编号", "姓名");
-	printf("%15d%15s\n", s.id,
-			s.name);
+	tablemaker tb(2);
+	tb << "教师编号";
+	tb << "姓名";
+	tb << s.id;
+	tb << s.name;
+	tb.put();
 }
 
 void teacher_sort_by_id_less()
@@ -392,37 +408,47 @@ void chg_teacher()
 char* course_id2name(int);
 void print_teacher_course_info(vector<teacher_course>& vtc)
 {
+	tablemaker tb(4);
+	tb << "教师编号";
+	tb << "教师名称";
+	tb << "课程编号";
+	tb << "课程名";
+	
 	for(vector<teacher_course>::iterator it=vtc.begin(); it!=vtc.end(); it++)
 	{
-		cout << std::setw(15) << setfill(' ') << left
-			<< "序号" << "教师编号" << "教师名称" <<
-			"课程编号" << "课程名";
-		cout << setw(15) << setfill(' ') << left
-			<< it - vtc.begin() + 1 
-			<< it->teacher_id 
-			<< teacher_id2name(it->teacher_id)
-			<< it->course_id
-			<< course_id2name(it->course_id);
+		tb << it->teacher_id;
+		tb << teacher_id2name(it->teacher_id);
+		tb << it->course_id;
+		tb << course_id2name(it->course_id);
 	}
 }
 
 void print_course_info()
 {
 	//打印课程信息
-	printf("%15s%15s%15s%15s\n", "序号", "课程编号", "课程名称","学分");
+	tablemaker tb(3);
+	tb << "课程编号";
+	tb << "课程名称";
+	tb << "学分";
 	for(int i=0; i<db_course.getData().size(); i++)
-		printf("%15d%15d%15s%15d\n", i+1,
-				db_course.getData()[i].id,
-				db_course.getData()[i].name,
-				db_course.getData()[i].credit);
+	{
+		tb << db_course.getData()[i].id;
+		tb << db_course.getData()[i].name;
+		tb << db_course.getData()[i].credit;
+	}
+	tb.put();
 }
 
 void print_course_info(course s)
 {
 	//打印单个课程信息
-	printf("%15s%15s%15s\n", "课程编号", "课程名称","学分");
-	printf("%15d%15s%15d\n", s.id,
-			s.name,s.credit);
+	tablemaker tb(3);
+	tb << "课程编号";
+	tb << "课程名称";
+	tb << "学分";
+	tb << s.id;
+	tb << s.name;
+	tb << s.credit;
 }
 
 vector<course>::iterator choose_course() //根据用户输入选择课程（并打印课程信息）
@@ -619,57 +645,76 @@ char* course_id2name(int course_id)
 void print_student_couese_info()
 {
 	//打印选课信息
-	printf("%15s%15s%15s%15s%15s\n", "序号", "学号", "姓名","课程编号","课程名");
+	tablemaker tb(4);
+	tb << "学号";
+	tb << "姓名";
+	tb << "课程编号";
+	tb << "课程名";
 	for(int i=0; i<db_student_course.getData().size(); i++)
-		printf("%15d%15d%15s%15d%15s\n", i+1,
-				db_student_course.getData()[i].student_id,
-				student_id2name(db_student_course.getData()[i].student_id),
-				db_student_course.getData()[i].course_id,
-				course_id2name(db_student_course.getData()[i].course_id));
+	{
+		tb << db_student_course.getData()[i].student_id;
+		tb << student_id2name(db_student_course.getData()[i].student_id);
+		tb << db_student_course.getData()[i].course_id;
+		tb << course_id2name(db_student_course.getData()[i].course_id);
+	}
+	tb.put();
 }
 
 void print_student_course_info(const student_course& s)
 {
 	//打印单个选课信息
-	printf("%15s%15s%15s%15s\n", "学号", "姓名","课程编号","课程名");
-	printf("%15d%15s%15d%15s\n",
-				s.student_id,
-				student_id2name(s.student_id),
-				s.course_id,
-				course_id2name(s.course_id));
-
+	tablemaker tb(4);
+	tb << "学号";
+	tb << "姓名";
+	tb << "课程编号";
+	tb << "课程名";
+	tb << s.student_id;
+	tb << student_id2name(s.student_id);
+	tb << s.course_id;
+	tb << course_id2name(s.course_id);
+	tb.put(false);
 }
 
 void print_student_schedule(int student_id)
 {
 	//打印选课信息
-	printf("%15s%15s%15s%15s%15s%15s\n", "序号", "学号", "姓名","课程编号","课程名","分数");
+	tablemaker tb(5);
+	tb << "学号";
+	tb << "姓名";
+	tb << "课程编号";
+	tb << "课程名";
+	tb << "分数";
 	for(int i=0; i<db_student_course.getData().size(); i++)
 		if(db_student_course.getData()[i].student_id == student_id)
-		printf("%15d%15d%15s%15d%15s\n", i+1,
-				db_student_course.getData()[i].student_id,
-				student_id2name(db_student_course.getData()[i].student_id),
-				db_student_course.getData()[i].course_id,
-				course_id2name(db_student_course.getData()[i].course_id),
-				db_student_course.getData()[i].score
-				);
-
+		{
+			tb << db_student_course.getData()[i].student_id;
+			tb << student_id2name(db_student_course.getData()[i].student_id);
+			tb << db_student_course.getData()[i].course_id;
+			tb << course_id2name(db_student_course.getData()[i].course_id);
+			tb << db_student_course.getData()[i].score;
+		}
+		tb.put();
 }
 
 void print_course_schedule(int course_id)
 {
 	//打印选课信息
-	printf("%15s%15s%15s%15s%15s%15s\n", "序号", "学号", "姓名","课程编号","课程名","分数");
+	tablemaker tb(5);
+	tb << "学号";
+	tb << "姓名";
+	tb << "课程编号";
+	tb << "课程名";
+	tb << "分数";
 	for(int i=0; i<db_student_course.getData().size(); i++)
 		if(db_student_course.getData()[i].course_id == course_id)
-		printf("%15d%15d%15s%15d%15s\n", i+1,
-				db_student_course.getData()[i].student_id,
-				student_id2name(db_student_course.getData()[i].student_id),
-				db_student_course.getData()[i].course_id,
-				course_id2name(db_student_course.getData()[i].course_id),
-				db_student_course.getData()[i].score
-				);
-
+		{
+				tb << db_student_course.getData()[i].student_id;
+				tb << student_id2name(db_student_course.getData()[i].student_id);
+				tb << db_student_course.getData()[i].course_id;
+				tb << course_id2name(db_student_course.getData()[i].course_id);
+				tb << db_student_course.getData()[i].score;
+		}
+		tb.put();
 }
 
 void get_per_student_course()
