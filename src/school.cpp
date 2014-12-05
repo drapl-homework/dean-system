@@ -147,8 +147,18 @@ void student_sort_by_id_more()
 void add_student()
 {
 	student ns;
-	printf("请输入学号：");
-	cin >> ns.id;
+	
+	ns.id = getinput<int>("请输入学号：");
+	vector<student>::iterator it = find_if(db_student.getData().begin(),
+		db_student.getData().end(),
+		student_id_equal(ns.id));
+
+	if(it != db_student.getData().end()) //学号唯一
+	{
+		cout << "学号已存在！";
+		return;
+	}
+	
 	printf("请输入姓名：");
 	cin >> ns.name;
 	if(yesorno("确认添加"))
@@ -330,8 +340,17 @@ vector<teacher>::iterator choose_teacher() //根据用户输入选择教师（�
 void add_teacher()
 {
 	teacher ns;
-	printf("请输入教师编号：");
-	cin >> ns.id;
+	ns.id = getinput<int>("请输入教师编号：");
+	vector<teacher>::iterator it = find_if(db_teacher.getData().begin(),
+		db_teacher.getData().end(),
+		teacher_id_equal(ns.id));
+
+	if(it != db_teacher.getData().end()) //编号唯一
+	{
+		cout << "编号已存在！";
+		return;
+	}
+	
 	printf("请输入姓名：");
 	cin >> ns.name;
 	if(yesorno("确认添加"))
@@ -537,6 +556,16 @@ void add_course()
 {
 	course ns;
 	ns.id = getinput<int>("请输入课程编号：");
+	vector<course>::iterator it = find_if(db_course.getData().begin(),
+		db_course.getData().end(),
+		course_id_equal(ns.id));
+
+	if(it != db_course.getData().end()) //编号唯一
+	{
+		cout << "编号已存在！";
+		return;
+	}
+	
 	printf("请输入课程名称：");
 	cin >> ns.name;
 	ns.credit = getinput<int>("请输入学分：");
