@@ -60,6 +60,12 @@ class BindError{};
 int menu::bind(string label, void(*function)())
 {
 	int result = 0;
+	if(label == "__MAIN__") //绑定主菜单
+	{
+		header_function = function;
+		return 1;
+	}
+
 	for(map<string,pair<string,MenuItem> >::iterator it = items.begin();
 			it !=items.end(); it++)
 	{

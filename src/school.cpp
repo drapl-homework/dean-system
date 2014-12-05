@@ -851,10 +851,27 @@ void del_score()
 
 }
 
+void welcome_page()
+{
+	cout << "欢迎使用教务系统！" << endl;
+	cout << "====================" << endl;
+	
+	tablemaker tb(2);
+	tb << "当前课程数量";
+	tb << db_course.getData().size();
+	tb << "任课教师数量";
+	tb << db_teacher.getData().size();
+	tb << "学生选课数量";
+	tb << db_student_course.getData().size();
+	tb.put(false);
+}
+
 int main()
 {
 	ifstream infile("config/school.config");
 	MenuCreator a(infile);
+	
+	a.bind("__MAIN__", welcome_page);
 	
 	a.bind("1_edit_student", print_student_info);
 	a.bind("1_student_sort_by_id_less", student_sort_by_id_less);
