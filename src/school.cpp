@@ -209,16 +209,18 @@ void chg_student()
 	if(yesorno("是否确定修改"))
 	{
 		bool flag = false;
+		student n(*it);
 		if(yesorno("是否修改姓名"))
 		{
 			flag = true;
 			char newname[35];
 			cout << "输入新姓名：";
 			cin >> newname;
-			strcpy(it->name, newname);
+			strcpy(n.name, newname);
 		}
 		if(flag)
 		{
+			*it = n;
 			db_student.putData();
 			cout << "修改成功！" << endl;
 		}
@@ -419,16 +421,18 @@ void chg_teacher()
 	if(yesorno("是否确定修改"))
 	{
 		bool flag = false;
+		teacher n(*it);
 		if(yesorno("是否修改姓名"))
 		{
 			flag = true;
 			char newname[35];
 			cout << "输入新姓名：";
 			cin >> newname;
-			strcpy(it->name, newname);
+			strcpy(n.name, newname);
 		}
 		if(flag)
 		{
+			*it = n;
 			db_teacher.putData();
 			cout << "修改成功！" << endl;
 		}
@@ -436,11 +440,7 @@ void chg_teacher()
 			cout << "未做改动。" << endl;
 	}
 	else
-	{
 		cout << "取消修改。" << endl;
-		db_teacher.rollback();
-		
-	}
 
 	if(yesorno("是否继续修改"))
 		chg_teacher();
@@ -709,14 +709,14 @@ void chg_course()
 	if(yesorno("是否确定修改"))
 	{
 		bool flag = false;
-		course n(it);
+		course n(*it);
 		if(yesorno("是否修改课程名称"))
 		{
 			flag = true;
 			char newname[35];
 			cout << "输入新课程名称：";
 			cin >> newname;
-			strcpy(it->name, newname);
+			strcpy(n.name, newname);
 		}
 		if(yesorno("是否修改学分"))
 		{
@@ -724,10 +724,11 @@ void chg_course()
 			int newcredit;
 			cout << "输入新学分：";
 			cin >> newcredit;
-			it->credit = newcredit;
+			n.credit = newcredit;
 		}
 		if(flag)
 		{
+			*it = n;
 			db_course.putData();
 			cout << "修改成功！" << endl;
 		}
