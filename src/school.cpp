@@ -1099,7 +1099,7 @@ int main()
 	a.bind("2_teacher_sort_by_id_more", teacher_sort_by_id_more);
 	a.bind("3_add_teacher", add_teacher);
 	a.bind("4_del_teacher", del_teacher);
-	a.bind("5_change_student", chg_teacher);
+	a.bind("5_change_teacher", chg_teacher);
 	
 	a.bind("2_edit_course_list", print_course_info);
 	a.bind("1_course_sort_by_id_less", course_sort_by_id_less);
