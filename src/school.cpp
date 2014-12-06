@@ -947,6 +947,8 @@ void add_student_course()
 		add_student_course();
 }
 
+
+
 vector<student_course>::iterator get_student_course()
 {
 	vector<student>::iterator it=choose_student();
@@ -961,6 +963,23 @@ vector<student_course>::iterator get_student_course()
 	db_student_course.getData().begin(),
 		db_student_course.getData().end(),
 		student_course_equal(it->id,it2->id));
+	return it3;
+}
+
+vector<teacher_course>::iterator get_teacher_course()
+{
+	vector<teacher>::iterator it=choose_teacher();
+	if(it == db_teacher.getData().end())
+		return db_teacher_course.getData().end();
+		
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return db_teacher_course.getData().end();
+		
+	vector<teacher_course>::iterator it3; it3 = find_if( 
+	db_teacher_course.getData().begin(),
+		db_teacher_course.getData().end(),
+		teacher_course_equal(it->id,it2->id));
 	return it3;
 }
 
@@ -997,6 +1016,36 @@ void del_student_course()
 		}
 	if(yesorno("是否继续删除"))
 		del_student_course();
+}
+
+void del_teacher_course()
+{
+	vector<teacher_course>::iterator it = get_teacher_course();
+	if(it == db_teacher_course.getData().end())
+	{
+		cout << "无此任课." << endl;
+		return;
+	}
+
+	if(count_if(db_teacher_course.getData().begin(),
+		 db_teacher_course.getData().end(),
+		 teacher_course_course_id_equal(it->course_id)) == 1) //这门课只有一个人上
+	{
+		cout << "课程只有一个人上，请直接删除该课程。" << endl;
+		return;
+	}
+	
+	cout << "任课信息如下：" << endl;
+	print_teacher_course_info(*it);
+	
+	if(yesorno("确认删除"))
+	{
+		db_teacher_course.getData().erase(it);
+		db_teacher_course.putData();
+		cout << "删除成功" << endl;
+	}
+	if(yesorno("是否继续删除"))
+		del_teacher_course();
 }
 
 void add_score()
@@ -1109,6 +1158,8 @@ int main()
 	a.bind("3_add_course", add_course);
 	a.bind("4_del_course", del_course);
 	a.bind("5_change_course", chg_course);
+	a.bind("6_add_teacher_course", add_teacher_course);
+	a.bind("7_del_teacher_course", del_teacher_course);
 
 	a.bind("3_edit_student_course", print_student_course_info);
 	a.bind("1_add_student_course", add_student_course);

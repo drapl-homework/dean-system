@@ -190,3 +190,13 @@ class teacher_course_course_id_equal
 	private:
 		int x;
 };
+
+class teacher_course_equal
+{
+	public:
+		teacher_course_equal(int a, int b): x(a),y(b) {}
+		bool operator()(teacher_course s1) { return x == s1.teacher_id and y == s1.course_id;}
+	private:
+		int x;
+		int y;
+};
