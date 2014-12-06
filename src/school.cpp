@@ -369,6 +369,7 @@ void add_teacher()
 		add_teacher();
 }
 
+void print_teacher_schedule(int teacher_id);
 void del_teacher()
 {
 	vector<teacher>::iterator it = choose_teacher();
@@ -734,10 +735,7 @@ void chg_course()
 		if(yesorno("是否修改学分"))
 		{
 			flag = true;
-			int newcredit;
-			cout << "输入新学分：";
-			cin >> newcredit;
-			n.credit = newcredit;
+			n.credit = getinput<int>("输入新学分：");
 		}
 		if(flag)
 		{
@@ -811,7 +809,10 @@ void print_student_schedule(int student_id)
 			tb << student_id2name(db_student_course.getData()[i].student_id);
 			tb << db_student_course.getData()[i].course_id;
 			tb << course_id2name(db_student_course.getData()[i].course_id);
-			tb << db_student_course.getData()[i].score;
+			if(db_student_course.getData()[i].score >= 0)
+				tb << db_student_course.getData()[i].score;
+			else
+				tb << "未登记";
 		}
 		tb.put();
 }
@@ -838,7 +839,7 @@ void print_teacher_schedule(int teacher_id)
 template < class T >
 void print_course_schedule_if(int course_id, T func)
 {
-	//打印选课信息
+	//打印选课/成绩信息
 	tablemaker tb(5);
 	tb << "学号";
 	tb << "姓名";
@@ -853,14 +854,17 @@ void print_course_schedule_if(int course_id, T func)
 				tb << student_id2name(db_student_course.getData()[i].student_id);
 				tb << db_student_course.getData()[i].course_id;
 				tb << course_id2name(db_student_course.getData()[i].course_id);
-				tb << db_student_course.getData()[i].score;
+				if(db_student_course.getData()[i].score >= 0)
+					tb << db_student_course.getData()[i].score;
+				else
+					tb << "未登记";
 		}
 		tb.put();
 }
 
 void print_course_schedule(int course_id)
 {
-	//打印选课信息
+	//打印选课/成绩信息
 	tablemaker tb(5);
 	tb << "学号";
 	tb << "姓名";
@@ -874,7 +878,10 @@ void print_course_schedule(int course_id)
 				tb << student_id2name(db_student_course.getData()[i].student_id);
 				tb << db_student_course.getData()[i].course_id;
 				tb << course_id2name(db_student_course.getData()[i].course_id);
-				tb << db_student_course.getData()[i].score;
+				if(db_student_course.getData()[i].score >= 0)
+					tb << db_student_course.getData()[i].score;
+				else
+					tb << "未登记";
 		}
 		tb.put();
 }
@@ -1070,7 +1077,7 @@ void add_score()
 		return;
 	}
 	else
-		if(yesorno("确认添加"))
+		if(yesorno("确认添加成绩"))
 		{
 			int score = getinput<int>("请输入分数：");
 			it3->score = score;
