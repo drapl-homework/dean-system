@@ -181,10 +181,16 @@ void del_student()
 	if(it == db_student.getData().end())
 		return;
 	
-	if(yesorno("是否确定删除"))
+	if(yesorno("删除后对应选课记录也会删除，是否确定删除"))
 	{
 		db_student.getData().erase(it);
 		db_student.putData();
+		for(vector<student_course>::iterator it2 = 				db_student_course.getData().begin();
+				it2 != db_student_course.getData().end();
+				it2++)  //同时删除对应选课
+			if(it2->student_id == it->id)
+				db_student_course.getData().erase(it2);
+		db_student_course.putData();
 		cout << "删除成功！" << endl;
 	}
 	else
@@ -670,10 +676,22 @@ void del_course()
 	vector<course>::iterator it=choose_course();
 	if(it == db_course.getData().end())
 		return;
-	if(yesorno("是否确定删除"))
+	if(yesorno("删除后对应选课记录和任课记录也会删除，是否确定删除"))
 	{
 		db_course.getData().erase(it);
 		db_course.putData();
+		for(vector<student_course>::iterator it2 = 				db_student_course.getData().begin();
+				it2 != db_student_course.getData().end();
+				it2++)  //同时删除对应选课
+			if(it2->course_id == it->id)
+				db_student_course.getData().erase(it2);
+
+		for(vector<teacher_course>::iterator it2 = 				db_teacher_course.getData().begin();
+				it2 != db_teacher_course.getData().end();
+				it2++)  //同时删除对应任课
+			if(it2->course_id == it->id)
+				db_teacher_course.getData().erase(it2);
+
 		cout << "删除成功！" << endl;
 	}
 	else
