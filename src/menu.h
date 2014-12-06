@@ -14,17 +14,17 @@ struct MenuItem;
 class menu{ //菜单类
 	public:
 		menu();
-		void addItem(string label, string text, MenuItem item);
-		int bind(string label, void(*function)());
-		int retext(string label, string text);
-		void(*header_function)();
-		int print_and_choose();
-		void execute();
+		void addItem(string label, string text, MenuItem item); //增加菜单项目
+		int bind(string label, void(*function)()); //绑定函数到某个菜单项
+		int retext(string label, string text); //修改某菜单项名字
+		void(*header_function)(); //显示菜单之前打印标题的函数
+		int print_and_choose(); //弹出选择对话框并返回选择值
+		void execute(); //执行菜单逻辑
 	private:
-		void print_menu();
-		void number();
-		map<string,pair<string,MenuItem> > items;
-		/*给菜单项目编号*/
+		void print_menu(); //打印菜单文字
+		void number(); //给项目编号
+		map<string,pair<string,MenuItem> > items; //菜单项
+		/*给菜单项目编号到idmap*/
 		vector<map<string,pair<string,MenuItem> >::iterator > idmap;
 };
 
@@ -156,16 +156,19 @@ void menu::execute() //显示菜单
 
 class SyntaxError{};
 
-class MenuCreator{
+class MenuCreator{ //从文件生成菜单
 	public:
 		MenuCreator(ifstream& infile);
-		void execute();
-		int bind(string label, void(*function)());
-		int retext(string label, string text);
-		int print_and_choose();
+		~MenuCreator();
+		void execute(); //执行主菜单
+		int bind(string label, void(*function)()); //绑定函数到某项
+		int retext(string label, string text); //修改某项文字
+		int print_and_choose(); //作为选择器使用
 		menu* parse(vector<string>::iterator begin, vector<string>::iterator end, vector<string>::iterator& it);
 	private:
 		menu* topMenu;
+		vector<menu*> pool; //记录申请的内存，便于回收
+	
 };
 
 MenuCreator::MenuCreator(ifstream& infile)
@@ -184,9 +187,11 @@ MenuCreator::MenuCreator(ifstream& infile)
 	topMenu = parse(menustring.begin(), menustring.end(), it);
 }
 
-/*MenuCreator::~MenuCreator() //TODO
+MenuCreator::~MenuCreator()
 {
-}*/
+	for(vector<menu*>::iterator it=pool.begin(); it!=pool.end(); it++)
+		delete *it;
+}
 
 void MenuCreator::execute()
 {
@@ -211,7 +216,16 @@ int MenuCreator::retext(string label, string text)
 
 menu* MenuCreator::parse(vector<string>::iterator begin, vector<string>::iterator end, vector<string>::iterator& it)
 {
+	/* 菜单文件格式：
+	 * {
+	 * 	标记:项目文字（普通项目）
+	 * 	标记:项目文字（子菜单）
+	 * 	{
+	 * 	}
+	 * }
+	 */
 	menu* m = new menu;
+	pool.push_back(m);
 	string label, text;
 	while(true)
 	{

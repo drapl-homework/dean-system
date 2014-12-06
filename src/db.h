@@ -8,12 +8,12 @@ class db
 {
 	public:
 		db(string filename):fname(filename) {rollback();}
-		vector<T>& getData();
-		void putData();
-		vector<T> buffer;
-		void rollback();
+		vector<T>& getData(); //以vector的形式获取数据
+		void putData(); //提交修改
+		void rollback(); //回滚
 	private:
-		string fname;
+		string fname; //文件名
+		vector<T> buffer; //缓冲区
 };
 
 template < class T>
