@@ -148,6 +148,24 @@ class student_course_equal
 		int y;
 };
 
+class score_less_then
+{
+	public:
+		score_less_then(int a): x(a) {}
+		bool operator()(student_course s1) { return s1.score >= 0 and s1.score < x ;}
+	private:
+		int x;
+};
+
+class score_not_less_then
+{
+	public:
+		score_not_less_then(int a): x(a) {}
+		bool operator()(student_course s1) { return s1.score >= 0 and s1.score <= x ;}
+	private:
+		int x;
+};
+
 
 struct teacher_course //教师上课数据项
 {

@@ -497,7 +497,7 @@ void print_teacher_course_info(teacher_course tc)
 void print_course_info()
 {
 	//打印课程信息
-	tablemaker tb(3);
+	tablemaker tb(4);
 	tb << "课程编号";
 	tb << "课程名称";
 	tb << "学分";
@@ -709,6 +709,7 @@ void chg_course()
 	if(yesorno("是否确定修改"))
 	{
 		bool flag = false;
+		course n(it);
 		if(yesorno("是否修改课程名称"))
 		{
 			flag = true;
@@ -801,6 +802,48 @@ void print_student_schedule(int student_id)
 		tb.put();
 }
 
+void print_teacher_schedule(int teacher_id)
+{
+	//打印任课信息
+	tablemaker tb(4);
+	tb << "编号";
+	tb << "姓名";
+	tb << "课程编号";
+	tb << "课程名";
+	for(int i=0; i<db_teacher_course.getData().size(); i++)
+		if(db_teacher_course.getData()[i].teacher_id == teacher_id)
+		{
+			tb << db_teacher_course.getData()[i].teacher_id;
+			tb << teacher_id2name(db_teacher_course.getData()[i].teacher_id);
+			tb << db_teacher_course.getData()[i].course_id;
+			tb << course_id2name(db_teacher_course.getData()[i].course_id);
+		}
+		tb.put();
+}
+
+template < class T >
+void print_course_schedule_if(int course_id, T func)
+{
+	//打印选课信息
+	tablemaker tb(5);
+	tb << "学号";
+	tb << "姓名";
+	tb << "课程编号";
+	tb << "课程名";
+	tb << "分数";
+	for(int i=0; i<db_student_course.getData().size(); i++)
+		if(db_student_course.getData()[i].course_id == course_id
+				and func(db_student_course.getData()[i]))
+		{
+				tb << db_student_course.getData()[i].student_id;
+				tb << student_id2name(db_student_course.getData()[i].student_id);
+				tb << db_student_course.getData()[i].course_id;
+				tb << course_id2name(db_student_course.getData()[i].course_id);
+				tb << db_student_course.getData()[i].score;
+		}
+		tb.put();
+}
+
 void print_course_schedule(int course_id)
 {
 	//打印选课信息
@@ -822,28 +865,56 @@ void print_course_schedule(int course_id)
 		tb.put();
 }
 
-void get_per_student_course()
+void get_per_student_course() //单个学生课表
 {
 	vector<student>::iterator it=choose_student();
 	if(it == db_student.getData().end())
 		return;
 
 	cout << "学生课表如下：" << endl;
-	print_student_info(*it);
 	
 	print_student_schedule(it->id);
 }
 
-void get_per_course()
+void get_per_teacher_course() //单个老师课表
 {
-	bool flag = false;
+	vector<teacher>::iterator it=choose_teacher();
+	if(it == db_teacher.getData().end())
+		return;
 
+	cout << "教师课表如下：" << endl;
+	
+	print_teacher_schedule(it->id);
+}
+
+void get_per_course() //单科成绩表
+{
 	vector<course>::iterator it2=choose_course();
 	if(it2 == db_course.getData().end())
 		return;
-	cout << "课程学生信息如下：" << endl;
+	cout << "成绩信息如下：" << endl;
 
 	print_course_schedule(it2->id);
+}
+
+void print_fail_student() //不及格同学
+{
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return;
+	cout << "不及格同学如下：" << endl;
+
+	print_course_schedule_if(it2->id,score_less_then(60));
+}
+
+void print_excel_student() //优秀同学
+{
+	vector<course>::iterator it2=choose_course();
+	if(it2 == db_course.getData().end())
+		return;
+	cout << "优秀同学如下：" << endl;
+
+	print_course_schedule_if(it2->id,score_not_less_then(85));
 }
 
 void add_student_course()
@@ -879,7 +950,7 @@ vector<student_course>::iterator get_student_course()
 {
 	vector<student>::iterator it=choose_student();
 	if(it == db_student.getData().end())
-		return db_student_course.getData().end();;
+		return db_student_course.getData().end();
 		
 	vector<course>::iterator it2=choose_course();
 	if(it2 == db_course.getData().end())
@@ -912,7 +983,10 @@ void del_student_course()
 {
 	vector<student_course>::iterator it3 = get_student_course();
 	if(it3 == db_student_course.getData().end())
+	{
 		cout << "无此选课." << endl;
+		return;
+	}
 	else
 		if(yesorno("确认删除"))
 		{
@@ -928,7 +1002,10 @@ void add_score()
 {
 	vector<student_course>::iterator it3 = get_student_course();
 	if(it3 == db_student_course.getData().end())
+	{
 		cout << "无此选课." << endl;
+		return;
+	}
 	else
 		if(yesorno("确认添加"))
 		{
@@ -944,7 +1021,10 @@ void del_score()
 {
 	vector<student_course>::iterator it3 = get_student_course();
 	if(it3 == db_student_course.getData().end())
+	{
 		cout << "无此选课." << endl;
+		return;
+	}
 	else
 		if(yesorno("确认删除"))
 		{
@@ -1040,8 +1120,11 @@ int main()
 	a.bind("11_teacher_list", print_teacher_info);
 	a.bind("2_course_list", print_course_info);
 	a.bind("3_student_course", get_per_student_course);
+	a.bind("4_teacher_course", get_per_teacher_course);
 	a.bind("5_course_score", get_per_course);
 	a.bind("6_student_score", get_per_student_course);
+	a.bind("7_fail_student", print_fail_student);
+	a.bind("8_excel_student", print_excel_student);
 
 	
 	a.execute();
