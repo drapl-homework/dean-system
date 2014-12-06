@@ -460,7 +460,11 @@ void chg_teacher()
 			cout << "未做改动。" << endl;
 	}
 	else
+	{
 		cout << "取消修改。" << endl;
+		db_teacher.rollback();
+		
+	}
 
 	if(yesorno("是否继续修改"))
 		chg_teacher();
@@ -521,11 +525,23 @@ void print_course_info()
 	tb << "课程编号";
 	tb << "课程名称";
 	tb << "学分";
+	tb << "任课老师";
+	
 	for(int i=0; i<db_course.getData().size(); i++)
 	{
 		tb << db_course.getData()[i].id;
 		tb << db_course.getData()[i].name;
 		tb << db_course.getData()[i].credit;
+		
+		string teachers;
+		for(vector<teacher_course>::iterator it = db_teacher_course.getData().begin();
+			it != db_teacher_course.getData().end(); it++)
+		if(it->course_id == db_course.getData()[i].id)
+		{
+			teachers += teacher_id2name(it->teacher_id);
+			teachers += "，";
+		}
+		tb << teachers;
 	}
 	tb.put();
 }

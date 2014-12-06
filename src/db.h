@@ -7,18 +7,18 @@ template < class T >
 class db
 {
 	public:
-		db(string filename);
+		db(string filename):fname(filename) {rollback();}
 		vector<T>& getData();
 		void putData();
 		vector<T> buffer;
+		void rollback();
 	private:
 		string fname;
 };
 
-template < class T >
-db<T>::db(string filename)
+template < class T>
+void db<T>::rollback()
 {
-	fname = filename;
 	ifstream infile(fname.c_str(), ios::in | ios::binary);
 	if(infile.fail()) //文件不存在
 	{
@@ -33,6 +33,7 @@ db<T>::db(string filename)
 	int length = infile.tellg() / sizeof(T);
 	infile.seekg (0, infile.beg);
 
+	buffer.clear();
 	for(int i=0;i<length;i++)
 	{
 		T tmp;
