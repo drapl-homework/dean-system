@@ -3,6 +3,8 @@
 #include <sstream>
 #include <cwchar>
 
+#ifndef _STRINGUTILS_H_
+#define _STRINGUTILS_H_ 1
 using namespace std;
 
 vector<wstring> split(const wstring &s, wchar_t delim) {
@@ -22,3 +24,4 @@ wstring trim(const wstring &s)
 	return s2;
 }
 
+#endif

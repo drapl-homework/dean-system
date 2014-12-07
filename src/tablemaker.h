@@ -6,6 +6,9 @@
 
 using namespace std;
 
+#define _TABLEMAKER_H_
+#define _TABLEMAKER_H_ 1
+
 int count_width(wstring x) //统计宽度
 {
 	int length = 0;
@@ -108,3 +111,4 @@ void tablemaker::put(bool lineno)
 	wcout << endl;
 }
 
+#endif

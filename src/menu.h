@@ -9,6 +9,9 @@
 
 using namespace std;
 
+#ifndef _MENU_H_
+#define _MENU_H_ 1
+
 struct MenuItem;
 
 class menu{ //菜单类
@@ -263,3 +266,4 @@ menu* MenuCreator::parse(vector<wstring>::iterator begin, vector<wstring>::itera
 	return m;
 }
 
+#endif

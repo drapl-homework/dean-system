@@ -1,5 +1,8 @@
 #include <string>
 
+#ifndef _SCHOOL_H_
+#define _SCHOOL_H_ 1
+
 struct student //学生数据项
 {
 	int id; //学号
@@ -200,3 +203,5 @@ class teacher_course_equal
 		int x;
 		int y;
 };
+
+#endif

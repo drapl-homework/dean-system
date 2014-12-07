@@ -3,6 +3,9 @@
 
 using namespace std;
 
+#ifndef _DB_H_
+#define _DB_H_ 1
+
 template < class T >
 class db
 {
@@ -60,3 +63,5 @@ void db<T>::putData()
 		outfile.write(cptr, sizeof(T));
 	}
 }
+
+#endif
