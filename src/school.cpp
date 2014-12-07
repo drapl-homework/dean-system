@@ -11,11 +11,19 @@
 
 using namespace std;
 
+#if __WCHAR_MAX__ > 0x10000 //Linux下使用32位wchar_t
 db<student> db_student(string("config/student_wchar.db"));
 db<teacher> db_teacher(string("config/teacher_wchar.db"));
 db<course> db_course(string("config/course_wchar.db"));
 db<student_course> db_student_course(string("config/student_course_wchar.db"));
 db<teacher_course> db_teacher_course(string("config/teacher_course_wchar.db"));
+#else //Windows下使用16位wchar_t，数据不通用
+db<student> db_student(string("config/student_wchar_16.db"));
+db<teacher> db_teacher(string("config/teacher_wchar_16.db"));
+db<course> db_course(string("config/course_wchar_16.db"));
+db<student_course> db_student_course(string("config/student_course_wchar_16.db"));
+db<teacher_course> db_teacher_course(string("config/teacher_course_wchar_16.db"));
+#endif
 
 wchar_t* course_id2name(int);
 
