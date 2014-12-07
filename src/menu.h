@@ -14,18 +14,18 @@ struct MenuItem;
 class menu{ //菜单类
 	public:
 		menu();
-		void addItem(string label, string text, MenuItem item); //增加菜单项目
-		int bind(string label, void(*function)()); //绑定函数到某个菜单项
-		int retext(string label, string text); //修改某菜单项名字
+		void addItem(wstring label, wstring text, MenuItem item); //增加菜单项目
+		int bind(wstring label, void(*function)()); //绑定函数到某个菜单项
+		int retext(wstring label, wstring text); //修改某菜单项名字
 		void(*header_function)(); //显示菜单之前打印标题的函数
 		int print_and_choose(); //弹出选择对话框并返回选择值
 		void execute(); //执行菜单逻辑
 	private:
 		void print_menu(); //打印菜单文字
 		void number(); //给项目编号
-		map<string,pair<string,MenuItem> > items; //菜单项
+		map<wstring,pair<wstring,MenuItem> > items; //菜单项
 		/*给菜单项目编号到idmap*/
-		vector<map<string,pair<string,MenuItem> >::iterator > idmap;
+		vector<map<wstring,pair<wstring,MenuItem> >::iterator > idmap;
 };
 
 enum ItemType {SUBMENU, FUNCTION};
@@ -41,9 +41,9 @@ menu::menu()
 	header_function = NULL;
 }
 
-void menu::addItem(string label, string text, MenuItem item)
+void menu::addItem(wstring label, wstring text, MenuItem item)
 {
-	items.insert(pair<string, pair<string, MenuItem> >(label, pair<string, MenuItem>(text, item)));
+	items.insert(pair<wstring, pair<wstring, MenuItem> >(label, pair<wstring, MenuItem>(text, item)));
 	number();
 }
 
@@ -51,22 +51,22 @@ void menu::number()
 {
 	idmap.clear();
 	/*给菜单项目编号*/
-	for(map<string,pair<string,MenuItem> >::iterator it = items.begin();
+	for(map<wstring,pair<wstring,MenuItem> >::iterator it = items.begin();
 			it !=items.end(); it++)
 		idmap.push_back(it);
 }
 
 class BindError{};
-int menu::bind(string label, void(*function)())
+int menu::bind(wstring label, void(*function)())
 {
 	int result = 0;
-	if(label == "__MAIN__") //绑定主菜单
+	if(label == L"__MAIN__") //绑定主菜单
 	{
 		header_function = function;
 		return 1;
 	}
 
-	for(map<string,pair<string,MenuItem> >::iterator it = items.begin();
+	for(map<wstring,pair<wstring,MenuItem> >::iterator it = items.begin();
 			it !=items.end(); it++)
 	{
 		if(it->first == label and it->second.second.type == FUNCTION)
@@ -87,10 +87,10 @@ int menu::bind(string label, void(*function)())
 	return false;
 }
 
-int menu::retext(string label, string text)
+int menu::retext(wstring label, wstring text)
 {
 	int result = 0;
-	for(map<string,pair<string,MenuItem> >::iterator it = items.begin();
+	for(map<wstring,pair<wstring,MenuItem> >::iterator it = items.begin();
 			it !=items.end(); it++)
 	{
 		if(it->first == label)
@@ -109,21 +109,24 @@ int menu::retext(string label, string text)
 void menu::print_menu()
 {
 	//打印标题栏
-	printf("\n\n\n====================\n");
+	wcout << endl << endl << endl << L"====================" << endl;
 	if(header_function)
 		header_function(); //执行标题函数
 
 	/*打印菜单*/
-	for(vector<map<string,pair<string,MenuItem> >::iterator >::iterator it = idmap.begin(); it != idmap.end(); it++)
-		printf("[%d]%s\n", int(it-idmap.begin()+1), (*it)->second.first.c_str());
+	for(vector<map<wstring,pair<wstring,MenuItem> >::iterator >::iterator it = idmap.begin(); it != idmap.end(); it++)
+	{
+		wcout << L"[" << int(it-idmap.begin()+1) << L"]";
+		wcout << (*it)->second.first << endl;
+	}
 }
 
 int menu::print_and_choose() //打印并等待用户选择
 {
 	print_menu();
-	printf("请选择（输入0返回）：\n");
+	wcout << L"请选择（输入0返回）：\n" << endl;
 	int selected;
-	cin >> selected;
+	wcin >> selected;
 	return selected;
 }
 
@@ -145,7 +148,7 @@ void menu::execute() //显示菜单
 		{
 			if(!idmap[selected - 1]->second.second.function)
 			{
-				printf("功能未实现！\n");
+				cout << L"功能未实现！" << endl;
 				continue;
 			}
 			idmap[selected - 1]->second.second.function();
@@ -158,33 +161,33 @@ class SyntaxError{};
 
 class MenuCreator{ //从文件生成菜单
 	public:
-		MenuCreator(ifstream& infile);
+		MenuCreator(wifstream& infile);
 		~MenuCreator();
 		void execute(); //执行主菜单
-		int bind(string label, void(*function)()); //绑定函数到某项
-		int retext(string label, string text); //修改某项文字
+		int bind(wstring label, void(*function)()); //绑定函数到某项
+		int retext(wstring label, wstring text); //修改某项文字
 		int print_and_choose(); //作为选择器使用
-		menu* parse(vector<string>::iterator begin, vector<string>::iterator end, vector<string>::iterator& it);
+		menu* parse(vector<wstring>::iterator begin, vector<wstring>::iterator end, vector<wstring>::iterator& it);
 	private:
 		menu* topMenu;
 		vector<menu*> pool; //记录申请的内存，便于回收
 	
 };
 
-MenuCreator::MenuCreator(ifstream& infile)
+MenuCreator::MenuCreator(wifstream& infile)
 {
-	string buffer;
-	vector<string> menustring;
+	vector<wstring> menuwstring;
+	wstring buffer;
 	getline(infile, buffer);
-	if(buffer != "{")
+	if(buffer != L"{")
 		throw SyntaxError();
 	while(not infile.eof())
 	{
 		getline(infile, buffer);
-		menustring.push_back(trim(buffer));
+		menuwstring.push_back(trim(buffer));
 	}
-	vector<string>::iterator it = menustring.begin();
-	topMenu = parse(menustring.begin(), menustring.end(), it);
+	vector<wstring>::iterator it = menuwstring.begin();
+	topMenu = parse(menuwstring.begin(), menuwstring.end(), it);
 }
 
 MenuCreator::~MenuCreator()
@@ -198,7 +201,7 @@ void MenuCreator::execute()
 	topMenu->execute();
 }
 
-int MenuCreator::bind(string label, void(*function)())
+int MenuCreator::bind(wstring label, void(*function)())
 {
 	return topMenu->bind(label, function);
 }
@@ -209,12 +212,12 @@ int MenuCreator::print_and_choose() //打印并等待用户选择
 }
 
 
-int MenuCreator::retext(string label, string text)
+int MenuCreator::retext(wstring label, wstring text)
 {
 	return topMenu->retext(label, text);
 }
 
-menu* MenuCreator::parse(vector<string>::iterator begin, vector<string>::iterator end, vector<string>::iterator& it)
+menu* MenuCreator::parse(vector<wstring>::iterator begin, vector<wstring>::iterator end, vector<wstring>::iterator& it)
 {
 	/* 菜单文件格式：
 	 * {
@@ -226,10 +229,10 @@ menu* MenuCreator::parse(vector<string>::iterator begin, vector<string>::iterato
 	 */
 	menu* m = new menu;
 	pool.push_back(m);
-	string label, text;
+	wstring label, text;
 	while(true)
 	{
-		if(*it == "}") //结束
+		if(*it == L"}") //结束
 		{
 			it++;
 			break;
@@ -238,17 +241,17 @@ menu* MenuCreator::parse(vector<string>::iterator begin, vector<string>::iterato
 		item.function = NULL;
 
 		/* 解析标记和文字 */
-		string label, text;
-		vector<string> tmp = split(*it, ':');
+		wstring label, text;
+		vector<wstring> tmp = split(*it, L':');
 		label = tmp[0];
 		text = tmp[1];
 		it++;
 
-		if(*it == "{") //下一行判断出是子菜单
+		if(*it == L"{") //下一行判断出是子菜单
 		{
 			it++;
-			vector<string>::iterator nbegin = it + 1;
-			vector<string>::iterator nend = end;
+			vector<wstring>::iterator nbegin = it + 1;
+			vector<wstring>::iterator nend = end;
 			menu* subm = parse(nbegin, nend, it);
 			item.type = SUBMENU;
 			item.submenu = subm;

@@ -3,7 +3,7 @@
 struct student //学生数据项
 {
 	int id; //学号
-	char name[35]; //姓名
+	wchar_t name[35]; //姓名
 };
 
 int student_id_less(student s1, student s2)
@@ -28,16 +28,16 @@ class student_id_equal
 class student_name_equal
 {
 	public:
-		student_name_equal(string a): x(a) {}
+		student_name_equal(wstring a): x(a) {}
 		bool operator()(student s1) { return x == s1.name;}
 	private:
-		string x;
+		wstring x;
 };
 
 struct teacher //教师数据项
 {
 	int id; //编号
-	char name[35]; //姓名
+	wchar_t name[35]; //姓名
 };
 
 int teacher_id_less(teacher s1, teacher s2)
@@ -62,16 +62,16 @@ class teacher_id_equal
 class teacher_name_equal
 {
 	public:
-		teacher_name_equal(string a): x(a) {}
+		teacher_name_equal(wstring a): x(a) {}
 		bool operator()(teacher s1) { return x == s1.name;}
 	private:
-		string x;
+		wstring x;
 };
 
 struct course //课程数据项
 {
 	int id; //课程编号
-	char name[35]; //课程名
+	wchar_t name[35]; //课程名
 	int credit; //学分
 };
 
@@ -107,10 +107,10 @@ class course_id_equal
 class course_name_equal
 {
 	public:
-		course_name_equal(string a): x(a) {}
+		course_name_equal(wstring a): x(a) {}
 		bool operator()(course s1) { return x == s1.name;}
 	private:
-		string x;
+		wstring x;
 };
 
 struct student_course //学生选课、成绩数据项

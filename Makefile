@@ -8,7 +8,7 @@ OBJS := $(addprefix obj/, $(notdir $(SRCS:.cpp=.o)))
 BINS := $(addprefix bin/, $(notdir $(basename $(SRCS))))
 DEPS := $(OBJS:.o=.d)
 
-CC := g++
+CC := clang
 
 
 all: $(BINS)

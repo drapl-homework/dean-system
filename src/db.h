@@ -23,7 +23,7 @@ void db<T>::rollback()
 	if(infile.fail()) //文件不存在
 	{
 		infile.close();
-		ofstream outfile(fname.c_str(), ios::out | ios::trunc | ios::binary); //创建文件
+		wofstream outfile(fname.c_str(), ios::out | ios::trunc | ios::binary); //创建文件
 		outfile.close();
 		return;
 	}

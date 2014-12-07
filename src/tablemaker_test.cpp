@@ -3,14 +3,14 @@
 int main()
 {
 	tablemaker a(3);
-	a << "a";
-	a << "b";
-	a << "c";
-	a << "d";
-	a << "e";
-	a << "f";
-	a << "g";
-	a << "h";
-	a << "i";
+	a << L"a";
+	a << L"b";
+	a << L"c";
+	a << L"d";
+	a << L"e";
+	a << L"f";
+	a << L"g";
+	a << L"h";
+	a << L"i";
 	a.put(true);
 }
