@@ -2,13 +2,12 @@
 #include "db.h"
 #include "school.h"
 #include "tablemaker.h"
-#include <cstdio>
 #include <iostream>
 #include <algorithm>
 #include <cwchar>
 #include <clocale>
 #include <locale>
-#include <iomanip>
+#include <stdexcept>
 
 using namespace std;
 
@@ -81,7 +80,10 @@ void print_student_info(student s)
 vector<student>::iterator choose_student() //根据用户输入选择学生（并打印学生信息）
 {
 	wifstream infile("config/choose_student.config");
-	infile.imbue(std::locale(""));
+	try{
+		infile.imbue(std::locale(""));
+	}
+	catch(runtime_error){}
 
 	MenuCreator a(infile);
 	bool flag = false;
@@ -290,7 +292,11 @@ void teacher_sort_by_id_more()
 vector<teacher>::iterator choose_teacher() //根据用户输入选择教师（并打印教师信息）
 {
 	wifstream infile("config/choose_teacher.config");
-	infile.imbue(std::locale(""));
+	try{
+		infile.imbue(std::locale(""));
+	}
+	catch(runtime_error){}
+
 	MenuCreator a(infile);
 	bool flag = false;
 	vector<teacher>::iterator it;
@@ -553,7 +559,11 @@ void print_course_info(course s)
 vector<course>::iterator choose_course() //根据用户输入选择课程（并打印课程信息）
 {
 	wifstream infile("config/choose_course.config");
-	infile.imbue(std::locale(""));
+	try{
+		infile.imbue(std::locale(""));
+	}
+	catch(runtime_error){}
+
 	MenuCreator a(infile);
 	bool flag = false;
 	vector<course>::iterator it;
@@ -1160,7 +1170,11 @@ int main()
 {
 	setlocale(LC_ALL, "zh_CN.UTF-8");
 	wifstream infile("config/school.config", wifstream::in);
-	infile.imbue(std::locale(""));
+	try{
+		infile.imbue(std::locale(""));
+	}
+	catch(runtime_error){}
+
 	MenuCreator a(infile);
 	
 	a.bind(L"__MAIN__", welcome_page);
