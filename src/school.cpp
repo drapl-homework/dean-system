@@ -41,6 +41,7 @@ bool yesorno(wstring tips) //选择“是”“否”
 		return true;
 	if(flag == L'n' or flag == L'N')
 		return false;
+	return false;
 }
 
 wchar_t* student_id2name(int student_id) //转换学生id到名字

@@ -33,7 +33,7 @@ class tablemaker: public ostream
 	public:
 		tablemaker(int c):col(c),count(0) {}
 		template <class T>
-		ostream& operator<<(T a);
+		void operator<<(T a);
 		void put(bool lineno=true);
 	private:
 		wstringstream buffer;
@@ -42,7 +42,7 @@ class tablemaker: public ostream
 };
 
 template <class T>
-ostream& tablemaker::operator<<(T a)
+void tablemaker::operator<<(T a)
 {
 	buffer << a << endl;
 	count++;
