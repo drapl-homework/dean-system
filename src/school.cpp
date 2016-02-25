@@ -64,12 +64,11 @@ void print_student_info()
 	//打印学生信息
 	tablemaker tb(2);
 	
-	tb << L"学号";
-	tb << L"姓名";
+	tb << L"学号" << L"姓名";
 	for(int i=0; i<db_student.getData().size(); i++)
 	{
-				tb << db_student.getData()[i].id;
-				tb << db_student.getData()[i].name;
+				tb << db_student.getData()[i].id
+				   << db_student.getData()[i].name;
 	}
 	tb.put();
 }

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define _TABLEMAKER_H_
+#ifndef _TABLEMAKER_H_
 #define _TABLEMAKER_H_ 1
 
 int count_width(wstring x) //统计宽度
@@ -36,7 +36,7 @@ class tablemaker: public ostream
 	public:
 		tablemaker(int c):col(c),count(0) {}
 		template <class T>
-		void operator<<(T a);
+		tablemaker& operator<<(T a);
 		void put(bool lineno=true);
 	private:
 		wstringstream buffer;
@@ -45,10 +45,11 @@ class tablemaker: public ostream
 };
 
 template <class T>
-void tablemaker::operator<<(T a)
+tablemaker& tablemaker::operator<<(T a)
 {
 	buffer << a << endl;
 	count++;
+	return *this;
 }
 
 void tablemaker::put(bool lineno)
